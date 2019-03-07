@@ -3,8 +3,8 @@ sudo: false
 
 language: python
 
-#python:
-#  - 3.6.8
+python:
+  - 3.6.8
 
 # The apt packages below are needed for sphinx builds
 addons:
@@ -19,7 +19,6 @@ env:
     - CRDS_SERVER_URL='https://jwst-crds.stsci.edu'
     - CRDS_PATH='/tmp/crds_cache'
     - NUMPY_VERSION=1.16
-    - TEST_COMMAND='python setup.py test'
     - PIP_DEPENDENCIES='.[test]'
     - PYTHON_VERSION=3.6.8
 
