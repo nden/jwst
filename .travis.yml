@@ -21,7 +21,7 @@ env:
     - NUMPY_VERSION=1.16
     - TEST_COMMAND='python setup.py test'
     - PIP_DEPENDENCIES='.[test]'
-    - python=3.6.8
+    - PYTHON_VERSION=3.6.8
 
   matrix:
     - env: python=3.6.8
