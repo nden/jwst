@@ -22,9 +22,6 @@ env:
     - NUMPY_VERSION=1.16
 
     matrix:
-      - TEST_COMMAND='python setup.py egg-info'
-        PIP_DEPENDENCIES='.[test]'
-
       - TEST_COMMAND='python setup.py test'
         PIP_DEPENDENCIES='.[test]'
 
