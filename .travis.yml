@@ -21,21 +21,32 @@ env:
     - CRDS_PATH='/tmp/crds_cache'
     - NUMPY_VERSION=1.16
 
+    matrix:
+      - TEST_COMMAND='python setup.py egg-info'
+        PIP_DEPENDENCIES='.[test]'
+
+      - TEST_COMMAND='python setup.py test'
+        PIP_DEPENDENCIES='.[test]'
+
 matrix:
   # Don't wait for allowed failures
   fast_finish: true
   include:
     # Run tests
-    - env: TEST_COMMAND='python setup.py test'
-           PIP_DEPENDENCIES='.[test]'
+    #- env: TEST_COMMAND='python setup.py test'
+    #       PIP_DEPENDENCIES='.[test]'
+
     # Build sphinx documentation with warnings
     - env: TEST_COMMAND='python setup.py build_sphinx -W'
            PIP_DEPENDENCIES='.[docs]'
+
     # PEP8 check
     - env: TEST_COMMAND='flake8 --count --select=F, E101, E111, E112, E113, E401, E402, E711, E722 --max-line-length=110 jwst'
+
     # Strict PEP8 check, an allowed failure below
     - env: TEST_COMMAND='flake8 --count jwst'
-  allow_failures:
+
+    allow_failures:
     - env: TEST_COMMAND='flake8 --count jwst'
 
 install:
