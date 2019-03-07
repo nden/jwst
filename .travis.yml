@@ -23,8 +23,8 @@ env:
     - PIP_DEPENDENCIES='.[test]'
 
     matrix:
-      - python=3.6.8
-      - python=3.7
+      - env: python=3.6.8
+      - env: python=3.7
 
 matrix:
   # Don't wait for allowed failures
