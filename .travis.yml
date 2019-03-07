@@ -19,20 +19,20 @@ env:
     - CRDS_SERVER_URL='https://jwst-crds.stsci.edu'
     - CRDS_PATH='/tmp/crds_cache'
     - NUMPY_VERSION=1.16
-    #- TEST_COMMAND='python setup.py test'
-    #- PIP_DEPENDENCIES='.[test]'
+    - TEST_COMMAND='python setup.py test'
+    - PIP_DEPENDENCIES='.[test]'
 
-    #matrix:
-    #  - env: python=3.6.8
-    #  - env: python=3.7
+  matrix:
+    - env: python=3.6.8
+    - env: python=3.7
 
 matrix:
   # Don't wait for allowed failures
   fast_finish: true
   include:
     # Run tests
-    - env: TEST_COMMAND='python setup.py test'
-           PIP_DEPENDENCIES='.[test]'
+    #- env: TEST_COMMAND='python setup.py test'
+    #       PIP_DEPENDENCIES='.[test]'
 
     #- env: python=3.7 TEST_COMMAND='python setup.py test'
     #       PIP_DEPENDENCIES='.[test]'
