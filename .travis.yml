@@ -1,8 +1,11 @@
 dist: xenial
+sudo: false
+
 language: python
+
 python:
   - 3.6.8
-sudo: false
+  - 3.7
 
 # The apt packages below are needed for sphinx builds
 addons:
