@@ -1,4 +1,4 @@
-dist: xenial
+#dist: xenial
 sudo: false
 
 language: python
@@ -23,9 +23,9 @@ env:
     - PIP_DEPENDENCIES='.[test]'
     - PYTHON_VERSION=3.6.8
 
-  #matrix:
-  #  - env: python=3.6.8
-  #  - env: python=3.7
+  matrix:
+    - env: PYTHON_VERSION=3.6.8
+    - env: PYTHON_VERSION=3.7
 
 matrix:
   # Don't wait for allowed failures
