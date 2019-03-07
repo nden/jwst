@@ -28,8 +28,8 @@ matrix:
     - env: TEST_COMMAND='python setup.py test'
            PIP_DEPENDENCIES='.[test]'
 
-    - env: PYTHON_VERSION=3.7 TEST_COMMAND='python setup.py test'
-           PIP_DEPENDENCIES='.[test]'
+    #- env: PYTHON_VERSION=3.7 TEST_COMMAND='python setup.py test'
+    #       PIP_DEPENDENCIES='.[test]'
 
     # Build sphinx documentation with warnings
     - env: TEST_COMMAND='python setup.py build_sphinx -W'
