@@ -22,8 +22,8 @@ env:
     - NUMPY_VERSION=1.16
 
     matrix:
-      - TEST_COMMAND='python setup.py test'
-        PIP_DEPENDENCIES='.[test]'
+      - env: TEST_COMMAND='python setup.py test'
+             PIP_DEPENDENCIES='.[test]'
 
 matrix:
   # Don't wait for allowed failures
