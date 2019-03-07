@@ -1,8 +1,8 @@
 dist: xenial
 language: python
 
-python:
-  - 3.6.8
+#python:
+#  - 3.6.8
 sudo: false
 
 # The apt packages below are needed for sphinx builds
@@ -24,11 +24,11 @@ matrix:
   fast_finish: true
   include:
     # Run tests
-    - python: "3.7"
+    - python: 3.7
       env: TEST_COMMAND='python setup.py test'
            PIP_DEPENDENCIES='.[test]'
 
-    - python: "3.6.8"
+    - python: 3.6.8
       env: TEST_COMMAND='python setup.py test'
            PIP_DEPENDENCIES='.[test]'
 
