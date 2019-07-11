@@ -2769,7 +2769,7 @@ def do_extract1d(input_model, ref_dict, smoothing_length=None,
             del npixels_temp
 
             # Convert to flux density (for a point source).
-            shape = getattr(slit.meta.wcs, "bounding_box", slit.data.shape)
+            shape = getattr(slit.meta.wcs, "bounding_box", wcs_bbox_from_shape(slit.data.shape))
             pixel_solid_angle = util.pixel_area(slit.meta.wcs, shape)
             if pixel_solid_angle is None:
                 log.warning("Pixel solid angle could not be determined")
@@ -2870,7 +2870,7 @@ def do_extract1d(input_model, ref_dict, smoothing_length=None,
                     wcs = niriss.niriss_soss_set_input(input_model, sp_order)
                 else:
                     wcs = input_model.meta.wcs
-                shape = getattr(wcs, "bounding_box", input_model.data.shape)
+                shape = getattr(wcs, "bounding_box", wcs_bbox_from_shape(input_model.data.shape))
                 pixel_solid_angle = util.pixel_area(wcs, shape)
                 if pixel_solid_angle is None:
                     log.warning("Pixel solid angle could not be determined")
@@ -2972,7 +2972,7 @@ def do_extract1d(input_model, ref_dict, smoothing_length=None,
                                                            sp_order)
                     else:
                         wcs = input_model.meta.wcs
-                    shape = getattr(wcs, "bounding_box", input_model.data.shape)
+                    shape = getattr(wcs, "bounding_box", wcs_bbox_from_shape(input_model.data.shape))
                     pixel_solid_angle = util.pixel_area(wcs,
                                                         shape,
                                                         verbose)

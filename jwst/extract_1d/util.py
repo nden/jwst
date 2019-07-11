@@ -7,7 +7,7 @@ from gwcs.wcstools import grid_from_bounding_box
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
-def pixel_area(wcs, shape, verbose=True):
+def pixel_area(wcs, bbox, verbose=True):
     """Compute the solid angle of a pixel.
 
     Parameters
@@ -17,9 +17,9 @@ def pixel_area(wcs, shape, verbose=True):
         the right ascension, declination, and wavelength at that pixel
         (or array of pixels).
 
-    shape : tuple
-        The shape of the data array.  The bounding box from the wcs will be
-        used instead, if it exists.
+    bbox : tuple
+        The bounding box of the wcs.
+        If it did not exist it was created from the shape of the data.
 
     verbose : bool
         If True, log messages.
@@ -31,40 +31,49 @@ def pixel_area(wcs, shape, verbose=True):
         returned if this value could not be determined.
     """
 
-    if shape is not None and len(shape) != 2 and len(shape) != 3:
+    if bbox is not None and len(bbox) not in (2, 3):
         if verbose:
-            log.warning("shape = {}, should be 2-D or 3-D".format(shape))
+            log.warning("bbox = {}, should be 2-D or 3-D".format(bbox))
         return None
 
-    three_d = (len(shape) == 3)
+    #three_d = (len(bbox) == 3)
 
-    if three_d:
-        grid = np.indices(shape[-2:])
-        z = np.zeros(shape[-2:], dtype=np.float64) + shape[0] // 2
-        # The arguments are the X, Y, and Z pixel coordinates, and the
-        # output arrays will be 2-D.
-        try:
-            stuff = wcs(grid[1], grid[0], z)
-        except TypeError:
-            stuff = temp_wcs(wcs, grid[1], grid[0], z)
-        (ra, dec) = stuff[0:2]
-    else:
-        if hasattr(wcs, 'bounding_box') and wcs.bounding_box is not None:
-            grid2 = grid_from_bounding_box(wcs.bounding_box)
-            # Note that the elements of grid2 are reversed wrt grid.
-            try:
-                stuff = wcs(grid2[0], grid2[1])
-            except TypeError:
-                stuff = temp_wcs(wcs, grid2[0], grid2[1])
-            (ra, dec) = stuff[0:2]
-        else:
-            grid = np.indices(shape)
-            try:
-                stuff = wcs(grid[1], grid[0])
-                (ra, dec) = stuff[0:2]
-            except TypeError:
-                stuff = temp_wcs(wcs, grid[1], grid[0])
-            (ra, dec) = stuff[0:2]
+    #if three_d:
+        #grid = np.indices(shape[-2:])
+        #z = np.zeros(shape[-2:], dtype=np.float64) + shape[0] // 2
+        ## The arguments are the X, Y, and Z pixel coordinates, and the
+        ## output arrays will be 2-D.
+        #try:
+            #stuff = wcs(grid[1], grid[0], z)
+        #except TypeError:
+            #stuff = temp_wcs(wcs, grid[1], grid[0], z)
+        #(ra, dec) = stuff[0:2]
+    #else:
+        #if hasattr(wcs, 'bounding_box') and wcs.bounding_box is not None:
+            #grid2 = grid_from_bounding_box(wcs.bounding_box)
+            ## Note that the elements of grid2 are reversed wrt grid.
+            #try:
+                #stuff = wcs(grid2[0], grid2[1])
+            #except TypeError:
+                #stuff = temp_wcs(wcs, grid2[0], grid2[1])
+            #(ra, dec) = stuff[0:2]
+        #else:
+            #grid = np.indices(shape)
+            #try:
+                #stuff = wcs(grid[1], grid[0])
+                #(ra, dec) = stuff[0:2]
+            #except TypeError:
+                #stuff = temp_wcs(wcs, grid[1], grid[0])
+            #(ra, dec) = stuff[0:2]
+
+    grid = grid_from_bounding_box(bbox)
+
+    try:
+        stuff = wcs(*grid)
+    except TypeError:
+        stuff = temp_wcs(wcs, *grid)
+
+    ra, dec = stuff[0:2]
 
     cos_dec = np.cos(dec[0:-1, 0:-1] * np.pi / 180.)
     dra1 = (ra[0:-1, 1:] - ra[0:-1, 0:-1]) * cos_dec

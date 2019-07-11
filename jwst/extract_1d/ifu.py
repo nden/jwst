@@ -8,6 +8,7 @@ import photutils
 from photutils import CircularAperture, CircularAnnulus, \
                       RectangularAperture, aperture_photometry
 
+from ..assign_wcs.util import wcs_bbox_from_shape
 from .. import datamodels
 from ..datamodels import dqflags
 from . import spec_wcs
@@ -123,7 +124,7 @@ def ifu_extract1d(input_model, ref_dict, source_type, subtract_background,
         background = bkg.to(u.MJy / u.steradian).value
 
     # Compute the solid angle of a pixel in steradians.
-    shape = getattr(input_model.meta.wcs, "bounding_box", input_model.data.shape)
+    shape = getattr(input_model.meta.wcs, "bounding_box", wcs_bbox_from_shape(input_model.data.shape))
     pixel_solid_angle = util.pixel_area(input_model.meta.wcs, shape)
 
     if pixel_solid_angle is None:
@@ -396,12 +397,12 @@ def extract_ifu(input_model, source_type, extract_params):
     phot_table = aperture_photometry(temp, aperture,
                                      method=method, subpixels=subpixels)
     aperture_area = float(phot_table['aperture_sum'][0])
-    if LooseVersion(photutils.__version__) >= '0.7':
-        log.debug("aperture.area = %g; aperture_area = %g",
-                  aperture.area, aperture_area)
-    else:
-        log.debug("aperture.area() = %g; aperture_area = %g",
-                  aperture.area(), aperture_area)
+    #if LooseVersion(photutils.__version__) >= '0.7':
+        #log.debug("aperture.area = %g; aperture_area = %g",
+                  #aperture.area, aperture_area)
+    #else:
+        #log.debug("aperture.area() = %g; aperture_area = %g",
+                  #aperture.area(), aperture_area)
 
     if subtract_background and annulus is not None:
         # Compute the area of the annulus.
