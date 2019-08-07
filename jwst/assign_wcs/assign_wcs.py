@@ -48,7 +48,7 @@ def load_wcs(input_model, reference_files={}, nrs_slit_y_range=None):
                                 input_model.meta.instrument.pupil)
 
     if instrument.lower() == 'nirspec':
-        pipeline = mod.create_pipeline(input_model, reference_files, slit_y_range=nrs_slit_y_range)
+        pipeline, bbox = mod.create_pipeline(input_model, reference_files, slit_y_range=nrs_slit_y_range)
     else:
         pipeline = mod.create_pipeline(input_model, reference_files)
     # Initialize the output model as a copy of the input
@@ -60,6 +60,7 @@ def load_wcs(input_model, reference_files={}, nrs_slit_y_range=None):
     else:
         output_model = input_model.copy()
         wcs = WCS(pipeline)
+        wcs.bounding_box = bbox
         output_model.meta.wcs = wcs
         output_model.meta.cal_step.assign_wcs = 'COMPLETE'
         exclude_types = ['nrc_wfss', 'nrc_tsgrism', 'nis_wfss',

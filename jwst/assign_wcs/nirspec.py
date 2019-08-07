@@ -5,6 +5,7 @@ Calls create_pipeline() which redirects based on EXP_TYPE.
 
 """
 import logging
+import functools
 import numpy as np
 
 from astropy.modeling import models
@@ -55,7 +56,7 @@ def create_pipeline(input_model, reference_files, slit_y_range):
     if input_model.meta.instrument.grating.lower() == "mirror":
         pipeline = imaging(input_model, reference_files)
     else:
-        pipeline = exp_type2transform[exp_type](input_model, reference_files, slit_y_range=slit_y_range)
+        pipeline, bbox = exp_type2transform[exp_type](input_model, reference_files, slit_y_range=slit_y_range)
     if pipeline:
         log.info("Created a NIRSPEC {0} pipeline with references {1}".format(
                 exp_type, reference_files))
@@ -305,9 +306,12 @@ def slitlets_wcs(input_model, reference_files, open_slits_id):
     dms2detector = dms_to_sca(input_model)
     dms2detector.name = 'dms2sca'
     # DETECTOR to GWA transform
-    det2gwa = Identity(2) & detector_to_gwa(reference_files,
-                                            input_model.meta.instrument.detector,
-                                            disperser)
+    #det2gwa = Identity(2) & detector_to_gwa(reference_files,
+                                            #input_model.meta.instrument.detector,
+                                            #disperser)
+    det2gwa = detector_to_gwa(reference_files,
+                              input_model.meta.instrument.detector,
+                              disperser)
     det2gwa.name = "det2gwa"
 
     # GWA to SLIT
@@ -335,10 +339,10 @@ def slitlets_wcs(input_model, reference_files, open_slits_id):
         tel2sky = pointing.v23tosky(input_model) & Identity(1)
         tel2sky.name = "v2v3_to_sky"
 
-        msa_pipeline = [(det, dms2detector),
-                        (sca, det2gwa),
+        msa_pipeline = [(det, dms2detector &Identity(1)),
+                        (sca, det2gwa & Identity(1)),
                         (gwa, gwa2slit),
-                        (slit_frame, slit2msa),
+                        (slit_frame, slit2msa & Identity(1)),
                         (msa_frame, msa2oteip),
                         (oteip, oteip2v23),
                         (v2v3, tel2sky),
@@ -350,8 +354,13 @@ def slitlets_wcs(input_model, reference_files, open_slits_id):
                         (gwa, gwa2slit),
                         (slit_frame, slit2msa),
                         (msa_frame, None)]
-
-    return msa_pipeline
+    bbox = {}
+    for slit in open_slits_id:
+        transforms = np.array(msa_pipeline[:2])[:,1][::-1]
+        slit2detector =  functools.reduce(lambda x, y: x | y, transforms)
+        bb = compute_bounding_box(slit2detector, wrange)
+        bbox[shutter_id] = bb
+    return msa_pipeline, bbox
 
 
 def get_open_slits(input_model, reference_files=None, slit_y_range=[-.55, .55]):

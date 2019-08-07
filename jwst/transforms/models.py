@@ -676,8 +676,17 @@ class Gwa2Slit(Model):
         return self.models[index]
 
     def evaluate(self, name, x, y, z):
-        index = self.slit_ids.index(name)
+        try:
+            index = self.slit_ids.index(name)
+        except ValueError:
+            shutter_ids = [s.shutter_id for s in self.slits]
+            index = shutter_ids.index(int(name[0]))
         return (name, ) + self.models[index](x, y, z)
+
+    @property
+    def inverse(self):
+        invmodels = [m.inverse for m in self.models]
+        return self.__class__(self.slits, invmodels)
 
 
 class Slit2Msa(Model):
@@ -725,7 +734,11 @@ class Slit2Msa(Model):
         return self.models[index]
 
     def evaluate(self, name, x, y):
-        index = self.slit_ids.index(name)
+        try:
+            index = self.slit_ids.index(name)
+        except ValueError:
+            shutter_ids = [s.shutter_id for s in self.slits]
+            index = shutter_ids.index(int(name[0]))
         return self.models[index](x, y)
 
 
