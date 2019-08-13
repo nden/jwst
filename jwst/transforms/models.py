@@ -676,18 +676,62 @@ class Gwa2Slit(Model):
         return self.models[index]
 
     def evaluate(self, name, x, y, z):
+        name_id = int(name[0])
         try:
-            index = self.slit_ids.index(name)
+            index = self.slit_ids.index(name_id)
         except ValueError:
             shutter_ids = [s.shutter_id for s in self.slits]
-            index = shutter_ids.index(int(name[0]))
+            index = shutter_ids.index(name_id)
         return (name, ) + self.models[index](x, y, z)
 
     @property
     def inverse(self):
         invmodels = [m.inverse for m in self.models]
-        return self.__class__(self.slits, invmodels)
+        return Slit2Gwa(self.slits, invmodels)
 
+
+class Slit2Gwa(Model):
+    _separable = False
+
+    inputs = ('name', 'x_slit', 'y_slit', 'lam')
+
+    outputs = ('angle1', 'angle2', 'angle3', 'name')
+
+    def __init__(self, slits, models):
+        if isiterable(slits[0]):
+            self._slits = [tuple(s) for s in slits]
+            self.slit_ids = [s[0] for s in self._slits]
+        else:
+            self._slits = list(slits)
+            self.slit_ids = self._slits
+
+        self.models = models
+        super(Slit2Gwa, self).__init__()
+
+    @property
+    def slits(self):
+        if isiterable(self._slits[0]):
+            return [Slit(*row) for row in self._slits]
+        else:
+            return self.slit_ids
+
+    def get_model(self, name):
+        index = self.slit_ids.index(name)
+        return self.models[index]
+
+    def evaluate(self, name, x, y, z):
+        name_id = int(name[0])
+        try:
+            index = self.slit_ids.index(name_id)
+        except ValueError:
+            shutter_ids = [s.shutter_id for s in self.slits]
+            index = shutter_ids.index(name_id)
+        return self.models[index](x, y, z) + (name,)
+
+    @property
+    def inverse(self):
+        invmodels = [m.inverse for m in self.models]
+        return self.__class__(self.slits, invmodels)
 
 class Slit2Msa(Model):
     """
@@ -709,7 +753,7 @@ class Slit2Msa(Model):
 
     inputs = ('name', 'x_slit', 'y_slit')
     """ Name of the slit, x and y coordinates within the virtual slit."""
-    outputs = ('x_msa', 'y_msa')
+    outputs = ('name', 'x_msa', 'y_msa')
     """ x and y coordinates in the MSA frame."""
 
     def __init__(self, slits, models):
@@ -734,12 +778,72 @@ class Slit2Msa(Model):
         return self.models[index]
 
     def evaluate(self, name, x, y):
+        name_id = int(name[0])
         try:
-            index = self.slit_ids.index(name)
+            index = self.slit_ids.index(name_id)
         except ValueError:
             shutter_ids = [s.shutter_id for s in self.slits]
-            index = shutter_ids.index(int(name[0]))
-        return self.models[index](x, y)
+            index = shutter_ids.index(name_id)
+        return (name, ) + self.models[index](x, y)
+
+    @property
+    def inverse(self):
+        invmodels = [m.inverse for m in self.models]
+        return Msa2Slit(self.slits, invmodels)
+
+
+class Msa2Slit(Model):
+    """
+    NIRSpec slit to MSA transform.
+
+    Parameters
+    ----------
+    slits : list
+        A list of open slits.
+        A slit is a namedtupe, `~jwst.transforms.models.Slit`
+        Slit("name", "shutter_id", "dither_position", "xcen", "ycen", "ymin", "ymax",
+        "quadrant", "source_id", "shutter_state", "source_name",
+        "source_alias", "stellarity", "source_xpos", "source_ypos")
+    models : list
+        List of models (`~astropy.modeling.core.Model`) corresponding to the
+        list of slits.
+    """
+    _separable = False
+
+    inputs = ('name', 'x_msa', 'y_msa')
+    """ Name of the slit, x and y coordinates within the virtual slit."""
+    outputs = ('name', 'x_slit', 'y_slit')
+    """ x and y coordinates in the MSA frame."""
+
+    def __init__(self, slits, models):
+        super(Msa2Slit, self).__init__()
+        if isiterable(slits[0]):
+            self._slits = [tuple(s) for s in slits]
+            self.slit_ids = [s[0] for s in self._slits]
+        else:
+            self._slits = list(slits)
+            self.slit_ids = self._slits
+        self.models = models
+
+    @property
+    def slits(self):
+        if isiterable(self._slits[0]):
+            return [Slit(*row) for row in self._slits]
+        else:
+            return self.slit_ids
+
+    def get_model(self, name):
+        index = self.slit_ids.index(name)
+        return self.models[index]
+
+    def evaluate(self, name, x, y):
+        name_id = int(name[0])
+        try:
+            index = self.slit_ids.index(name_id)
+        except ValueError:
+            shutter_ids = [s.shutter_id for s in self.slits]
+            index = shutter_ids.index(name_id)
+        return (name, ) + self.models[index](x, y)
 
 
 class NirissSOSSModel(Model):

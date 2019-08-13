@@ -59,7 +59,7 @@ def load_wcs(input_model, reference_files={}, nrs_slit_y_range=None):
         return input_model
     else:
         output_model = input_model.copy()
-        wcs = WCS(pipeline)
+        wcs = WCS(pipeline, inputs=('x', 'y', 'slit'), selector=('slit',))
         wcs.bounding_box = bbox
         output_model.meta.wcs = wcs
         output_model.meta.cal_step.assign_wcs = 'COMPLETE'

@@ -221,7 +221,8 @@ def extract_slit(input_model, slit, exp_type):
     new_model : `~jwst.datamodels.SlitModel`
         The slit data model with WCS attached to it.
     """
-    slit_wcs = nirspec.nrs_wcs_set_input(input_model, slit.name)
+    #slit_wcs = nirspec.nrs_wcs_set_input(input_model, slit.name)
+    slit_wcs = input_model.meta.wcs.set_inputs(slit.name)
     xlo, xhi, ylo, yhi = offset_wcs(slit_wcs)
     log.info('Name of subarray extracted: %s', slit.name)
     log.info('Subarray x-extents are: %s %s', xlo, xhi)

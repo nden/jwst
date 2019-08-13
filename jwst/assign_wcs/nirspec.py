@@ -60,7 +60,7 @@ def create_pipeline(input_model, reference_files, slit_y_range):
     if pipeline:
         log.info("Created a NIRSPEC {0} pipeline with references {1}".format(
                 exp_type, reference_files))
-    return pipeline
+    return pipeline, bbox
 
 
 def imaging(input_model, reference_files):
@@ -341,11 +341,11 @@ def slitlets_wcs(input_model, reference_files, open_slits_id):
 
         msa_pipeline = [(det, dms2detector &Identity(1)),
                         (sca, det2gwa & Identity(1)),
-                        (gwa, gwa2slit),
+                        (gwa, Mapping((3,0,1,2)) | gwa2slit),
                         (slit_frame, slit2msa & Identity(1)),
-                        (msa_frame, msa2oteip),
-                        (oteip, oteip2v23),
-                        (v2v3, tel2sky),
+                        (msa_frame, Mapping((1,2,3,0)) | msa2oteip & Identity(1)),
+                        (oteip, oteip2v23 & Identity(1)),
+                        (v2v3, tel2sky & Identity(1)),
                         (world, None)]
     else:
         # convert to microns if the pipeline ends earlier
@@ -356,10 +356,10 @@ def slitlets_wcs(input_model, reference_files, open_slits_id):
                         (msa_frame, None)]
     bbox = {}
     for slit in open_slits_id:
-        transforms = np.array(msa_pipeline[:2])[:,1][::-1]
-        slit2detector =  functools.reduce(lambda x, y: x | y, transforms)
-        bb = compute_bounding_box(slit2detector, wrange)
-        bbox[shutter_id] = bb
+        transforms = np.array(msa_pipeline[:3])[:,1]
+        slit2detector =  (functools.reduce(lambda x, y: x | y, transforms)).inverse
+        bb = compute_bounding_box(slit2detector, wrange, slit.shutter_id)
+        bbox[slit.shutter_id] = bb
     return msa_pipeline, bbox
 
 
@@ -379,10 +379,10 @@ def get_open_slits(input_model, reference_files=None, slit_y_range=[-.55, .55]):
         slits = get_open_fixed_slits(input_model, slit_y_range)
     else:
         raise ValueError("EXP_TYPE {0} is not supported".format(exp_type.upper()))
-    if reference_files is not None:
-        slits = validate_open_slits(input_model, slits, reference_files)
-        log.info("Slits projected on detector {0}: {1}".format(input_model.meta.instrument.detector,
-                                                               [sl.name for sl in slits]))
+    #if reference_files is not None:
+    #    slits = validate_open_slits(input_model, slits, reference_files)
+    #    log.info("Slits projected on detector {0}: {1}".format(input_model.meta.instrument.detector,
+    #                                                           [sl.name for sl in slits]))
     if not slits:
         log_message = "No open slits fall on detector {0}.".format(input_model.meta.instrument.detector)
         log.critical(log_message)
@@ -1174,7 +1174,7 @@ def mask_slit(ymin=-.55, ymax=.55):
     return model
 
 
-def compute_bounding_box(slit2detector, wavelength_range, slit_ymin=-.55, slit_ymax=.55):
+def compute_bounding_box(slit2detector, wavelength_range, slit_id, slit_ymin=-.55, slit_ymax=.55):
     """
     Compute the bounding box of the projection of a slit/slice on the detector.
 
@@ -1196,8 +1196,8 @@ def compute_bounding_box(slit2detector, wavelength_range, slit_ymin=-.55, slit_y
     step = 1e-10
     nsteps = int((lam_max - lam_min) / step)
     lam_grid = np.linspace(lam_min, lam_max, nsteps)
-    x_range_low, y_range_low = slit2detector([0] * nsteps, [slit_ymin] * nsteps, lam_grid)
-    x_range_high, y_range_high = slit2detector([0] * nsteps, [slit_ymax] * nsteps, lam_grid)
+    x_range_low, y_range_low, _ = slit2detector([slit_id]*nsteps, [0] * nsteps, [slit_ymin] * nsteps, lam_grid)
+    x_range_high, y_range_high, _ = slit2detector([slit_id]*nsteps, [0] * nsteps, [slit_ymax] * nsteps, lam_grid)
     x_range = np.hstack((x_range_low, x_range_high))
 
     y_range = np.hstack((y_range_low, y_range_high))
@@ -1618,7 +1618,7 @@ def validate_open_slits(input_model, open_slits, reference_files):
                 slitdata_model = get_slit_location_model(slitdata)
                 msa_transform = slitdata_model | msa_model
                 msa2det = msa_transform & Identity(1) | col2det
-                bb = compute_bounding_box(msa2det, wrange, slit.ymin, slit.ymax)
+                bb = compute_bounding_box(msa2det, wrange, slit_id, slit.ymin, slit.ymax)
                 valid = _is_valid_slit(bb)
                 if not valid:
                     log.info("Removing slit {0} from the list of open slits because the "
