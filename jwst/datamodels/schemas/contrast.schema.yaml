@@ -15,3 +15,4 @@ allOf:
         datatype: float32
       - name: sigma
         datatype: float32
+...

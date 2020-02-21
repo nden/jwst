@@ -15,3 +15,4 @@ properties:
             title: Flux density (MJy/steradian) producing 1 cps
             type: number
             fits_keyword: PHOTMJSR
+...

@@ -56,3 +56,4 @@ allOf:
                 title: Output source catalog filename
                 type: string
                 fits_keyword: SCATFILE
+...

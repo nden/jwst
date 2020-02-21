@@ -12,3 +12,4 @@ allOf:
       fits_hdu: SCI
       default: 1.0
       datatype: float32
+...

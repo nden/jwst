@@ -35,3 +35,4 @@ allOf:
       fits_hdu: WHT
       default: 0.0
       datatype: float32
+...

@@ -13,3 +13,4 @@ allOf:
         An array of SlitModel instances. All slits come from the same exposure.
       items:
         $ref: slitdata.schema
+...

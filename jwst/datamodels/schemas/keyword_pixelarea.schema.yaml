@@ -19,3 +19,4 @@ properties:
             title: Nominal pixel area in arcsec^2
             type: number
             fits_keyword: PIXAR_A2
+...

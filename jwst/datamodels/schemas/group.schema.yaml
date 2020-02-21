@@ -34,3 +34,4 @@ properties:
       datatype: float64
     - name: helio_end_time
       datatype: float64
+...

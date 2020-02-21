@@ -19,3 +19,4 @@ properties:
               GRISMC|GRISMR|GRISMV2|GRISMV3|MASKBAR|MASKIPR|MASKRND|NRM|PINHOLES|\
               WLM8|WLP8|N/A)\\s*\\|\\s*)+$"
             fits_keyword: P_PUPIL
+...

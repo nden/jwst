@@ -38,3 +38,4 @@ allOf:
       type: array
       items:
         - $ref: "#definitions/zero_point_correction"
+...

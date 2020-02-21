@@ -25,3 +25,4 @@ allOf:
           radius_outer:
             title: Background annulus outer radius
             type: number
+...

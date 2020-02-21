@@ -18,3 +18,4 @@ allOf:
         datatype: int16
       - name: pixarea
         datatype: float32
+...

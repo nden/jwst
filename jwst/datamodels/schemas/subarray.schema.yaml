@@ -89,3 +89,4 @@ properties:
             title: Slow readout axis direction
             type: integer
             fits_keyword: SLOWAXIS
+...

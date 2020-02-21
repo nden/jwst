@@ -79,3 +79,4 @@ properties:
         default: step
     required: [class, name]
 required: [meta, parameters]
+...

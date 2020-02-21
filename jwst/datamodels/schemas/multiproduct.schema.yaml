@@ -115,3 +115,4 @@ allOf:
               default: ""
               fits_keyword: SHUTSTA
               fits_hdu: SCI
+...

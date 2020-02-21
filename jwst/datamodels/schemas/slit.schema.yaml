@@ -6,3 +6,4 @@ allOf:
 - $ref: core.schema
 - $ref: slitdata.schema
 - $ref: int_times.schema
+...

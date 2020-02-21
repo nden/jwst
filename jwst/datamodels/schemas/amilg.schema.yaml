@@ -54,3 +54,4 @@ allOf:
       datatype:
       - name: coeffs
         datatype: float64
+...

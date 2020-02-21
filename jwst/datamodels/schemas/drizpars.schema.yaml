@@ -25,3 +25,4 @@ allOf:
         datatype: [ascii, 10]
       - name: stepsize
         datatype: int32
+...

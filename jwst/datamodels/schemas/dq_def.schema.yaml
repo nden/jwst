@@ -16,3 +16,4 @@ properties:
       datatype: [ascii, 40]
     - name: DESCRIPTION
       datatype: [ascii, 80]
+...

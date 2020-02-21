@@ -29,3 +29,4 @@ allOf:
       datatype: uint16
 - $ref: group.schema
 - $ref: int_times.schema
+...

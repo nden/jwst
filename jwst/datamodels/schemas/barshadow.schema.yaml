@@ -49,3 +49,4 @@ allOf:
       type: number
       fits_keyword: CDELT2
       fits_hdu: data1x1
+...

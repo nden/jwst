@@ -33,3 +33,4 @@ allOf:
       ndim: 4
       datatype: float32
 - $ref: dq_def.schema
+...

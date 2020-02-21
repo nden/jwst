@@ -61,3 +61,4 @@ allOf:
          datatype: float32
        - name: B_B_LONG
          datatype: float32
+...

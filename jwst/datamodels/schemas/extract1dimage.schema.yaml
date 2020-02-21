@@ -32,3 +32,4 @@ allOf:
       type: integer
       fits_keyword: SMOOTH_L
       fits_hdu: SCI
+...

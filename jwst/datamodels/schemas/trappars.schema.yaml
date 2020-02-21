@@ -19,3 +19,4 @@ allOf:
         datatype: float64
       - name: decay_param
         datatype: float64
+...

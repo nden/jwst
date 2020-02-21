@@ -27,3 +27,4 @@ allOf:
         datatype: float32
       - name: skyout
         datatype: float32
+...

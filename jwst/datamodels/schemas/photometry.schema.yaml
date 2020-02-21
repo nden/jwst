@@ -35,3 +35,4 @@ properties:
             fits_keyword: PIXAR_A2
             fits_hdu: SCI
             blend_table: True
+...

@@ -73,4 +73,4 @@ properties:
               NIS, GUIDER1, GUIDER2, N/A]
             description: Detector name.
             fits_keyword: DETECTOR
-
+...

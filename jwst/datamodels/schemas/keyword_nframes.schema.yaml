@@ -14,3 +14,4 @@ properties:
             title: Number of frames per group
             type: integer
             fits_keyword: NFRAMES
+...

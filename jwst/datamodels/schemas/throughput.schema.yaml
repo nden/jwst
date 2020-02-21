@@ -16,3 +16,4 @@ allOf:
         datatype: float32
       - name: throughput
         datatype: float32
+...

@@ -9,3 +9,4 @@ properties:
     fits_hdu: PATHLOSS
     ndim: 2
     datatype: float32
+...

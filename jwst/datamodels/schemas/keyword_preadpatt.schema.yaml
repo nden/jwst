@@ -21,3 +21,4 @@ properties:
                  NRSIRS2RAPID|NRSRAPIDD1|NRSRAPIDD2|NRSRAPIDD6|NRSSLOW|RAPID|\
                  SHALLOW2|SHALLOW4|SLOW|TRACK|ANY|N/A)\\s*\\|\\s*)+$"
             fits_keyword: P_READPA
+...

@@ -318,3 +318,4 @@ properties:
             type: number
             fits_keyword: YREF_SCI
             fits_hdu: SCI
+...

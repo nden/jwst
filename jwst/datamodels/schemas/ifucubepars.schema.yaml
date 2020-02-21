@@ -23,3 +23,4 @@ allOf:
         datatype: float32
       - name: wave_roi
         datatype: float32
+...

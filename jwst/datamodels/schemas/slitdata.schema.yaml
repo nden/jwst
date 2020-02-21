@@ -132,3 +132,4 @@ allOf:
 - $ref: bunit.schema
 - $ref: photometry.schema
 - $ref: wcsinfo.schema
+...

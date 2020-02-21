@@ -29,3 +29,4 @@ properties:
               NRS_MSASPEC|NRS_MSATA|NRS_TACONFIRM|NRS_TACQ|NRS_TASLIT|NRS_WATA|\
               N/A|ANY)\\s*\\|\\s*)+$"
             fits_keyword: P_EXP_TY
+...

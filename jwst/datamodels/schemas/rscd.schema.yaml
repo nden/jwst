@@ -45,3 +45,4 @@ allOf:
         datatype: float32
       - name:  sat_scale
         datatype: float32
+...

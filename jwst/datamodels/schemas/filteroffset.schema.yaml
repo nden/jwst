@@ -21,3 +21,4 @@ allOf:
             type: number
           row_offset:
             type: number
+...

@@ -21,3 +21,4 @@ allOf:
       default: 0
       datatype: uint32
 - $ref: dq_def.schema
+...

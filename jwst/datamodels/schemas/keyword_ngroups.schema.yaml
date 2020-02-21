@@ -14,3 +14,4 @@ properties:
             title: Number of groups in integration
             type: integer
             fits_keyword: NGROUPS
+...

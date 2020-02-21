@@ -36,3 +36,4 @@ properties:
               # Misc
               N/A, ANY]
             fits_keyword: EXP_TYPE
+...

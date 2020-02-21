@@ -15,3 +15,4 @@ allOf:
       default: 0.0
       ndim: 3
       datatype: float32
+...

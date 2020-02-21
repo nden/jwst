@@ -944,7 +944,7 @@ properties:
               # NIRSpec FS, IFU, and MOS
               2-POINT-WITH-NIRCAM-SIZE2, 2-POINT-NOD, 3-POINT-NOD, 5-POINT-NOD,
               # NIRSpec IFU
-              4-POINT-NOD, 4-POINT-DITHER, CYCLING, SPARSE-CYCLING,
+              4-POINT-NOD, 4-POINT-DITHER, SPARSE-CYCLING,
               # Misc
               N/A, NONE, ANY]
             fits_keyword: PATTTYPE
@@ -2216,3 +2216,4 @@ properties:
             title: Master background file used
             type: string
             fits_keyword: MASTERBG
+...

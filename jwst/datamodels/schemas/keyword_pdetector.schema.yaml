@@ -18,3 +18,4 @@ properties:
               NRCBLONG|NRS1|NRS2|ANY|MIRIMAGE|MIRIFULONG|MIRIFUSHORT|\
               NIS|GUIDER1|GUIDER2|N/A)\\s*\\|\\s*)+$"
             fits_keyword: P_DETECT
+...

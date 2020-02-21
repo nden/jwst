@@ -39,3 +39,4 @@ allOf:
         datatype: int16
       - name: MASK
         datatype: uint32
+...

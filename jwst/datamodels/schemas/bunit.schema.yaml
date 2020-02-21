@@ -19,3 +19,4 @@ allOf:
           type: string
           fits_hdu: ERR
           fits_keyword: BUNIT
+...

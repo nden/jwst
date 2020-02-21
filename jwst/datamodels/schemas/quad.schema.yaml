@@ -25,3 +25,4 @@ allOf:
       fits_hdu: ERR
       default: 0.0
       datatype: float32
+...

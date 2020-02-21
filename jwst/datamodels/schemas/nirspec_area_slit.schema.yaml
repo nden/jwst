@@ -19,3 +19,4 @@ allOf:
         datatype: [ascii, 15]
       - name: pixarea
         datatype: float32
+...

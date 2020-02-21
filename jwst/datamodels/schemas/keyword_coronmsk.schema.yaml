@@ -28,3 +28,4 @@ properties:
               - enum:
                   [MASK210R, MASK335R, MASK430R, MASKLWB, MASKSWB]
             fits_keyword: CORONMSK
+...

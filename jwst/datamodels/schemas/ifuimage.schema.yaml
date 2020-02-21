@@ -42,3 +42,4 @@ allOf:
       datatype: float32
       default: 0.0
 - $ref: pathlosscorr.schema
+...

@@ -24,3 +24,4 @@ allOf:
       default: 0.0
       datatype: float32
 - $ref: dq_def.schema
+...

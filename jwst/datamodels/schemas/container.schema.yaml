@@ -25,3 +25,4 @@ properties:
           pointings:
             title: Number of pointings
             type: integer
+...

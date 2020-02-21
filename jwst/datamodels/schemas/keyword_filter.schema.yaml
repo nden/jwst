@@ -21,3 +21,4 @@ properties:
               F460M, F480M, F560W, F770W, FLENS, FND, GR150C,
               GR150R, OPAQUE, P750L, WLP4, N/A, MULTIPLE]
             fits_keyword: FILTER
+...

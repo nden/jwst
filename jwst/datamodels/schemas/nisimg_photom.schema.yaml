@@ -22,3 +22,4 @@ allOf:
         datatype: float32
       - name: uncertainty
         datatype: float32
+...

@@ -34,3 +34,4 @@ allOf:
       - name: reluncertainty
         datatype: float32
         ndim: 1
+...

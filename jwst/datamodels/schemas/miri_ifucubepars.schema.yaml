@@ -79,3 +79,4 @@ allOf:
         datatype: float32
       - name: scalerad
         datatype: float32
+...

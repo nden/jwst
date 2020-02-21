@@ -22,3 +22,4 @@ properties:
       datatype: float64
     - name: int_end_BJD_TDB
       datatype: float64
+...

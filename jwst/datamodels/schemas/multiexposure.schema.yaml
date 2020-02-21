@@ -16,3 +16,4 @@ allOf:
           properties:
             meta:
               title: META info from the exposure source file
+...
