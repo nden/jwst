@@ -1,7 +1,7 @@
 """
 Data model class heirarchy
 """
-
+import time
 import copy
 import datetime
 import os
@@ -30,6 +30,7 @@ from ..lib import s3_utils
 
 from .history import HistoryList
 
+s_time = 0
 
 class DataModel(properties.ObjectNode, ndmodel.NDModel):
     """
@@ -99,6 +100,8 @@ class DataModel(properties.ObjectNode, ndmodel.NDModel):
 
         kwargs.update({'ignore_missing_extensions': ignore_missing_extensions})
 
+        import time
+        start = time.time()
         # Load the schema files
         if schema is None:
             # Create an AsdfFile so we can use its resolver for loading schemas
@@ -106,9 +109,12 @@ class DataModel(properties.ObjectNode, ndmodel.NDModel):
             schema = asdf_schema.load_schema(self.schema_url,
                                              resolver=asdf_file.resolver,
                                              resolve_references=True)
+            time1 = time.time()
+            print('time to load schema', time1-start)
 
         self._schema = mschema.merge_property_trees(schema)
-
+        time2 = time.time()
+        print('time to merge schemas', time2-time1)
         # Provide the object as context to other classes and functions
         self._ctx = self
 
@@ -152,8 +158,10 @@ class DataModel(properties.ObjectNode, ndmodel.NDModel):
             asdffile = init
 
         elif isinstance(init, fits.HDUList):
+            time4 = time.time()
             asdffile = fits_support.from_fits(init, self._schema, self._ctx,
                                               **kwargs)
+            print('time frmo fits', time4-time2)
 
         elif isinstance(init, (str, bytes)):
             if isinstance(init, bytes):
@@ -348,6 +356,8 @@ class DataModel(properties.ObjectNode, ndmodel.NDModel):
         """
         Re-validate the model instance againsst its schema
         """
+        #import pdb
+        #pdb.set_trace()
         validate.value_change(str(self), self._instance, self._schema,
                               self._pass_invalid_values,
                               self._strict_validation)
@@ -594,12 +604,15 @@ class DataModel(properties.ObjectNode, ndmodel.NDModel):
         return attr in properties
 
     def __setattr__(self, attr, value):
+        s = time.time()
         if self.my_attribute(attr):
             object.__setattr__(self, attr, value)
         elif ndmodel.NDModel.my_attribute(self, attr):
             ndmodel.NDModel.__setattr__(self, attr, value)
         else:
             properties.ObjectNode.__setattr__(self, attr, value)
+        s_time = time.time() -s
+        print('s_time', s_time)
 
     def extend_schema(self, new_schema):
         """

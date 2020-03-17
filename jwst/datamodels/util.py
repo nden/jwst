@@ -58,7 +58,8 @@ def open(init=None, memmap=False, **kwargs):
     from . import filetype
 
     # Initialize variables used to select model class
-
+    #import pdb
+    #pdb.set_trace()
     hdulist = {}
     shape = ()
     file_name = None
@@ -77,10 +78,12 @@ def open(init=None, memmap=False, **kwargs):
     elif isinstance(init, (str, bytes)) or hasattr(init, "read"):
         # If given a string, presume its a file path.
         # if it has a read method, assume a file descriptor
-
+        import time
+        start = time.time()
         if isinstance(init, bytes):
             init = init.decode(sys.getfilesystemencoding())
-
+        time1 = time.time()
+        print('time to decode', time1 - start)
         file_name = basename(init)
         file_type = filetype.check(init)
 
@@ -133,11 +136,13 @@ def open(init=None, memmap=False, **kwargs):
                 shape = hdu.shape
             else:
                 shape = ()
-
+    time2 = time.time()
+    print('time to read hdulist', time2 - time1)
     # First try to get the class name from the primary header
     new_class = _class_from_model_type(hdulist)
+    time3 = time.time()
     has_model_type = new_class is not None
-
+    print('time to init from class', time3-time2)
     # Special handling for ramp files for backwards compatibility
     if new_class is None:
         new_class = _class_from_ramp_type(hdulist, shape)
@@ -162,7 +167,8 @@ def open(init=None, memmap=False, **kwargs):
 
     # Actually open the model
     model = new_class(init, **kwargs)
-
+    time4 = time.time()
+    print('time to create model', time4 - time3)
     # Close the hdulist if we opened it
     if file_to_close is not None:
         model._files_to_close.append(file_to_close)

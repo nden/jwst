@@ -251,16 +251,28 @@ def _find_property(schema, attr):
         find = 'default' in subschema
     return find
 
+import time
+start = time.time()
+getattr_time = 0
+#global setattr_time
+s_time = 0
+
 class Node():
     def __init__(self, attr, instance, schema, ctx):
+        print('\nschema', schema.keys())
+
         self._name = attr
         self._instance = instance
         self._schema = schema
         self._ctx = ctx
+        print('\nself._schema', self._schema['$schema'])
+        print('attr', attr)
+        #print('instance', instance)
 
     def _validate(self):
         instance = yamlutil.custom_tree_to_tagged_tree(self._instance,
                                                        self._ctx._asdf)
+        #return instance
         return validate.value_change(self._name, instance, self._schema,
                                       False, self._ctx._strict_validation)
 
@@ -280,12 +292,17 @@ class ObjectNode(Node):
             return self._instance == other
 
     def __getattr__(self, attr):
+        g = time.time()
         from . import ndmodel
-
+        
         if attr.startswith('_'):
             raise AttributeError('No attribute {0}'.format(attr))
 
         schema = _get_schema_for_property(self._schema, attr)
+        try:
+            print('in getattr, title', schema['title'], attr)
+        except KeyError:
+            pass
         try:
             val = self._instance[attr]
         except KeyError:
@@ -305,10 +322,12 @@ class ObjectNode(Node):
             node = ListNode(attr, val, schema, self._ctx)
         else:
             node = val
-
+        print('in getattr', time.time() - g)
+        #getattr _time += time.time() - g
         return node
 
     def __setattr__(self, attr, val):
+        s = time.time()
         if attr.startswith('_'):
             self.__dict__[attr] = val
         else:
@@ -320,7 +339,9 @@ class ObjectNode(Node):
             node = ObjectNode(attr, val, schema, self._ctx)
             if node._validate():
                 self._instance[attr] = val
-
+        #print('in setattr', time.time() - start)
+        #s_time += time.time() - s
+        
     def __delattr__(self, attr):
         if attr.startswith('_'):
             del self.__dict__[attr]

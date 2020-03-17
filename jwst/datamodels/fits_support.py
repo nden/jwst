@@ -441,7 +441,8 @@ def _schema_has_fits_hdu(schema):
 def _load_from_schema(hdulist, schema, tree, context):
     known_keywords = {}
     known_datas = set()
-
+    #import pdb
+    #pdb.set_trace()
     def callback(schema, path, combiner, ctx, recurse):
         result = None
         if 'fits_keyword' in schema:

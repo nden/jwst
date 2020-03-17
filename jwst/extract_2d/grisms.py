@@ -455,7 +455,7 @@ def extract_grism_objects(input_model,
                 tr.bounding_box = util.transform_bbox_from_shape(ext_data.shape)
                 subwcs.set_transform('grism_detector', 'detector', tr)
 
-                new_slit = datamodels.SlitModel(data=ext_data,
+                new_slit = datamodels.SlitDataModel(data=ext_data,
                                                 err=ext_err,
                                                 dq=ext_dq,
                                                 var_poisson=var_poisson,
