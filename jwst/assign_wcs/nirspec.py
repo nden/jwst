@@ -1764,4 +1764,5 @@ exp_type2transform = {'nrs_tacq': imaging,
                       'nrs_lamp': nrs_lamp,
                       'nrs_brightobj': slits_wcs,
                       'nrs_dark': not_implemented_mode,
+                      'nrs_verify': imaging,
                       }
