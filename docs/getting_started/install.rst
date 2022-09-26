@@ -17,16 +17,16 @@ The `jwst` package can be installed into a virtualenv or conda environment via
 environment that only has Python installed and then install the `jwst` package
 and its dependencies into that bare environment. If using conda environments,
 first make sure you have a recent version of Anaconda or Miniconda
-`installed <https://docs.conda.io/en/latest/miniconda.html>`_.. If desired, you
+`installed <https://docs.conda.io/en/latest/miniconda.html>`_. If desired, you
 can create multiple environments to allow for switching between different
 versions of the `jwst` package (e.g. a released version versus the current
 development version).
 
-In all cases, the installation is generally a 3-step process:
+In all cases, the installation is generally a 3-step process
 
-	1. Create a conda environment
-	2. Activate that environment
-	3. Install the desired version of the `jwst` package into that environment
+#. Create a conda environment
+#. Activate that environment
+#. Install the desired version of the `jwst` package into that environment
 
 Details are given below on how to do this for different types of installations,
 including tagged releases, DMS builds used in operations, and development
@@ -67,6 +67,27 @@ Github master branch:
 
     | >> conda create -n <env_name> python
     | >> conda activate <env_name>
+    | >> pip install git+https://github.com/spacetelescope/jwst
+
+.. _upgrade_install:
+Upgrading Installed Version
+---------------------------
+
+.. Important:: Do NOT use `pip install jwst --upgrade` to upgrade your
+    installation. This does not check if dependencies are upgraded and will cause
+    issues. Instead, use the method detailed below.
+
+If you have previously installed `jwst` and you would like to upgrade to keep your
+install up-to-date, we reccomend that you first uninstall the package in your
+environment of choice and then reinstall:
+    | >> pip uninstall jwst
+    | >> pip install jwst
+
+This will ensure that all dependency packages are also upgraded. This also
+applies when using the development version of jwst - to upgrade and grab recent
+changes, uninstall and re-install the master branch from Github:
+
+    | >> pip uninstall jwst
     | >> pip install git+https://github.com/spacetelescope/jwst
 
 

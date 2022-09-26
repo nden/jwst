@@ -12,7 +12,7 @@
 
 Welcome to the documentation for `jwst`. This package contains the Python
 software suite for the James Webb Space Telescope (JWST) calibration pipeline,
-to calibrate data from all JWST instruments by applying various corrections and
+which processes data from all JWST instruments by applying various corrections to
 produce science-ready, calibrated output products including fully calibrated
 individual exposures as well as high-level data products (mosaics, extracted
 spectra, etc.). The tools in this package allows users to run and configure the

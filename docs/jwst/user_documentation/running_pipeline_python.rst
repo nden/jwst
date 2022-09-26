@@ -4,6 +4,9 @@
 Running the JWST pipeline: Python Interface
 ===========================================
 
+.. Important:: The use of the ``run`` method to run a pipeline or step is not
+   reccomended. Please see :ref:`Run vs. Call methods<run_vs_call>` for more details.::
+
 The Python interface to the JWST pipeline has each `pipeline` and `step` as
 objects that can be imported into your Python session, configured, and used to
 process input data.
@@ -163,3 +166,8 @@ steps contained in that pipeline, this can be done in two different ways.
 **On Pipeline / Step Object**
 
 **Using a Parameter File**
+
+.. _run_vs_call:
+Run vs. Call Methods
+--------------------
+blah blah, blahblahblah

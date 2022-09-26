@@ -1,3 +1,5 @@
+.. _run_from_cli:
+
 =================================================
 Running the JWST pipeline: Command Line Interface
 =================================================
