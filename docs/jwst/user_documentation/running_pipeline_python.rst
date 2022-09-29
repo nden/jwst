@@ -158,6 +158,7 @@ precedence rules use values in the parameter file :
 
 To use an entire set of past reference files from a previous CRDS mapping, see :ref:`here<crds_context>`.
 
+.. _skip_step_python:
 Skipping a Pipeline Step
 ------------------------
 
@@ -166,7 +167,23 @@ steps contained in that pipeline, this can be done in two different ways.
 
 **On Pipeline / Step Object**
 
+Every step in a pipeline has a 'skip' flag that when set to true, will entirely
+skip that step. For example, to skip the saturation step in the Detector1Pipeline:
+::
+
+	 from jwst.pipeline import Detector1Pipeline
+	 result = Detector1Pipeline.call('jw00017001001_01101_00001_nrca1_uncal.fits',
+	 							  steps={"saturation" : {"skip": True}})
+
 **Using a Parameter File**
+
+The equivilant to the above example can be done by adding the following snippet
+to your parameter file:
+
+	steps:
+	- class: jwst.linearity.linearity_step.LinearityStep
+	  parameters:
+	    skip: true
 
 .. _run_vs_call:
 Run vs. Call Methods

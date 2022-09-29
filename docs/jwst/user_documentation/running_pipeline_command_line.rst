@@ -174,6 +174,7 @@ you would use:
   $ strun calwebb_detector1 jw00017001001_01101_00001_nrca1_uncal.fits
           --steps.linearity.override_linearity='my_lin.fits'
 
+.. _skip_step_cli:
 Skip
 ^^^^
 

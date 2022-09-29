@@ -120,7 +120,13 @@ an entire set of reference files)
 Is it possible to run a pipeline stage, but skip one or some of the steps in that Pipeline?
 -------------------------------------------------------------------------------------------
 
-The general answer is yes, steps can be 
+The general answer is yes, steps can be skipped in a pipeline. The caveat is that
+some steps expect or require a previous step to have been run, and therefore won't
+run unless that previous step has been run. For example `resample` requires that the
+`assign_wcs` step has already been run.
+
+For directions on how to skip a pipeline step when running in Python, see :ref:`here<skip_step_python>`.
+For the command line interface, see :ref:`here<skip_step_cli>`.
 
 
 General
@@ -129,8 +135,9 @@ General
 Can I create my own pipeline? # note to reviewer, is this answer right?
 -----------------------------
 
-Sort of. While you can't define a new Pipeline class, you can define, configure,
-and string together Step classes in succession to effectivley create your own pipeline.
+While you can't define a new Pipeline class, you can define, configure,
+and string together Step classes in succession to effectivley create your own pipeline
+consisting of the combination and order of steps you choose.
 
 
 What are the dependency packages of `jwst`?
@@ -149,8 +156,4 @@ aren't sure, contact the `JWST Help Desk <https://jwsthelp.stsci.edu>`_.
 
 If you have implemented a fix for a bug, see `the Github Contribution Guide <https://github.com/spacetelescope/jwst/blob/master/CONTRIBUTING.md>`_
 for instructions on how to have your bugfix reviewed and merged.
-
-I would like to 
-
-
 
