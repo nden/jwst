@@ -48,7 +48,7 @@ the correct reference files to use for that dataset, and downloads them to a
 local cache directory if they haven't already been downloaded so they're
 available on your filesystem for the pipeline to use. 
 
-
+.. _crds_context:
 Reference Files Mappings (CRDS Context)
 ---------------------------------------
 One of the main functions of CRDS is to associate a dataset with its best

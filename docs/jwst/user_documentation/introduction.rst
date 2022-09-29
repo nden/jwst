@@ -84,9 +84,9 @@ are standalone objects that are designed to be configured and run on input data.
 	Detector1Pipeline  # an example of a pipeline class
 	DarkCurrentStep    # an example of a step class
 
-Each pipeline or step has a unique module name (NamedLikeThis) - this name is
-used to designate which pipeline/step should be run when using both the Python
-or Command Line Interface.
+Each pipeline or step has a unique module name, which is the identifier used to
+invoke the correct pipeline/step when using either the Python or the Command
+Line Interface.
 
 **Package Structure** 
 

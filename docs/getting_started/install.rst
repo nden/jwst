@@ -43,6 +43,7 @@ You can install the latest released version via `pip`.  From a bash/zsh shell:
     | >> conda activate <env_name>
     | >> pip install jwst
 
+.. _installing_previous_release:
 Installing Previous Releases
 ----------------------------
 
@@ -59,6 +60,7 @@ Installing specific versions before `jwst 0.17.0` need to be installed from Gith
     | >> pip install git+https://github.com/spacetelescope/jwst@0.16.2
 
 
+.. _installing_dev:
 Installing the Development Version from Github
 ----------------------------------------------
 
