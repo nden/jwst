@@ -92,7 +92,7 @@ as **universal parameters** and are described below.
 .. _intro_output_directory:
 
 Output Directory
-^^^^^^^^^^^^^^^^
+----------------
 
 By default, all pipeline and step outputs will drop into the current
 working directory, i.e., the directory in which the process is
@@ -117,7 +117,7 @@ and location of the ``dark_current`` step, use the following
 .. _intro_output_file:
 
 Output File
-^^^^^^^^^^^
+-----------
 
 When running a pipeline, the ``stpipe`` infrastructure automatically passes the
 output data model from one step to the input of the next step, without
@@ -157,7 +157,7 @@ In this situation, using the default configuration, three files are created:
 
 
 Override Reference File
-^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------
 
 For any step that uses a calibration reference file you always have the
 option to override the automatic selection of a reference file from CRDS and
@@ -175,8 +175,9 @@ you would use:
           --steps.linearity.override_linearity='my_lin.fits'
 
 .. _skip_step_cli:
+
 Skip
-^^^^
+----
 
 Another parameter available to all steps in a pipeline is ``skip``. If
 ``skip=True`` is set for any step, that step will be skipped, with the output of

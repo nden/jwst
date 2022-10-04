@@ -6,8 +6,8 @@ Reference Files and CRDS
 
 .. Note:: The discussion of 'reference files' here refers strictly to those that
 		  contain additional data for pipeline steps. Parameter reference files,
-		  which are also versioned and managed by CRDS, are described in
-      :ref:`parameters`.
+		  which are also versioned and managed by CRDS, are described in :ref:`parameters`.
+
 
 Reference Files
 ================
@@ -49,6 +49,7 @@ local cache directory if they haven't already been downloaded so they're
 available on your filesystem for the pipeline to use. 
 
 .. _crds_context:
+
 Reference Files Mappings (CRDS Context)
 ---------------------------------------
 One of the main functions of CRDS is to associate a dataset with its best
@@ -65,7 +66,6 @@ necessary or desirable to use one of the non-default mappings in order to, for
 example, run different versions of the pipeline software or use older versions
 of the reference files. This can be accomplished by setting the environment
 variable ``CRDS_CONTEXT`` to the desired project mapping version, e.g.
-
 ::
 
 $ export CRDS_CONTEXT='jwst_0421.pmap'

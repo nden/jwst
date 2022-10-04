@@ -44,6 +44,7 @@ You can install the latest released version via `pip`.  From a bash/zsh shell:
     | >> pip install jwst
 
 .. _installing_previous_release:
+
 Installing Previous Releases
 ----------------------------
 
@@ -61,6 +62,7 @@ Installing specific versions before `jwst 0.17.0` need to be installed from Gith
 
 
 .. _installing_dev:
+
 Installing the Development Version from Github
 ----------------------------------------------
 
@@ -72,6 +74,7 @@ Github master branch:
     | >> pip install git+https://github.com/spacetelescope/jwst
 
 .. _upgrade_install:
+
 Upgrading Installed Version
 ---------------------------
 
@@ -82,6 +85,7 @@ Upgrading Installed Version
 If you have previously installed `jwst` and you would like to upgrade to keep your
 install up-to-date, we reccomend that you first uninstall the package in your
 environment of choice and then reinstall:
+
     | >> pip uninstall jwst
     | >> pip install jwst
 

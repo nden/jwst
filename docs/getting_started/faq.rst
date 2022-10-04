@@ -11,8 +11,8 @@ How do I install the pipeline?
 ------------------------------
 
 The most simple way to install the pipeline is to obtain the latest released
-version via. pip and install this into a Python environment. See the
-:ref:`QuickStart guide<quickstart>`for basic installation instructions.
+version via pip and install this into a Python environment. See the
+:ref:`QuickStart guide<quickstart>` for basic installation instructions.
 
 It is also possible to install older released versions, or the development version
 from Github. For more detailed install instructions, see :ref:`here<installation>`.
@@ -29,7 +29,7 @@ See see :ref:`Installing the Development Version from Github<installing_dev>`
 for instructions on how to do this.
 
 How do I install an older version of the pipeline?
-------------------------------------------------
+--------------------------------------------------
 
 See :ref:`Installing Previous Releases<installing_previous_release>`.
 
@@ -38,7 +38,7 @@ How do I simultaneously install the development version of `jwst` and one or all
 
 If you are in a scenario in which you need both the unreleased, development
 version of JWST and the unreleased, development version of one of it's dependency
- packages for recently merged changes that span both packages, first
+packages for recently merged changes that span both packages, first
 :ref:`install the development version<installing_dev>` of `jwst`. This will
 also install the minimum required versions of dependency packages
 (specified by setup.cfg) which will usually be one of the last releases.
@@ -133,7 +133,7 @@ General
 =======
 
 Can I create my own pipeline? # note to reviewer, is this answer right?
------------------------------
+-----------------------------------------------------------------------
 
 While you can't define a new Pipeline class, you can define, configure,
 and string together Step classes in succession to effectivley create your own pipeline

@@ -159,6 +159,7 @@ precedence rules use values in the parameter file :
 To use an entire set of past reference files from a previous CRDS mapping, see :ref:`here<crds_context>`.
 
 .. _skip_step_python:
+
 Skipping a Pipeline Step
 ------------------------
 
@@ -179,6 +180,7 @@ skip that step. For example, to skip the saturation step in the Detector1Pipelin
 
 The equivilant to the above example can be done by adding the following snippet
 to your parameter file:
+::
 
 	steps:
 	- class: jwst.linearity.linearity_step.LinearityStep
@@ -186,6 +188,7 @@ to your parameter file:
 	    skip: true
 
 .. _run_vs_call:
+
 Run vs. Call Methods
 --------------------
 
