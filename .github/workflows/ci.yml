@@ -72,7 +72,7 @@ jobs:
           #  python-version: 3.9
           #  toxenv: security
 
-	  - name: docs
+          - name: docs
             os: ubuntu-latest
             python-version: 3.9
             toxenv: docs
