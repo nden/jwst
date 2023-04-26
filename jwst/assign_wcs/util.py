@@ -101,7 +101,7 @@ def reproject(wcs1, wcs2):
 
 
 def compute_scale(wcs: WCS, fiducial: Union[tuple, np.ndarray],
-                  disp_axis: int = None, pscale_ratio: float = None) -> float:
+                  disp_axis: int = None, pscale_ratio: float = None, wavelength: float=None) -> float:
     """Compute scaling transform.
 
     Parameters
@@ -118,6 +118,9 @@ def compute_scale(wcs: WCS, fiducial: Union[tuple, np.ndarray],
     pscale_ratio : int
         Ratio of input to output pixel scale
 
+    wavelegnth : float
+        Central wavelength. Used in evaluating the inverse WCS transform for spectral data.
+
     Returns
     -------
     scale : float
@@ -129,7 +132,10 @@ def compute_scale(wcs: WCS, fiducial: Union[tuple, np.ndarray],
     if spectral and disp_axis is None:
         raise ValueError('If input WCS is spectral, a disp_axis must be given')
 
-    crpix = np.array(wcs.invert(*fiducial))
+    if spectral:
+        crpix = np.array(wcs.invert(fiducial[0], fiducial[1], wavelength))
+    else:
+        crpix = np.array(wcs.invert(*fiducial))
 
     delta = np.zeros_like(crpix)
     spatial_idx = np.where(np.array(wcs.output_frame.axes_type) == 'SPATIAL')[0]
@@ -199,7 +205,7 @@ def calc_rotation_matrix(roll_ref: float, v3i_yang: float, vparity: int = 1) -> 
 
 def wcs_from_footprints(dmodels, refmodel=None, transform=None, bounding_box=None,
                         pscale_ratio=None, pscale=None, rotation=None,
-                        shape=None, crpix=None, crval=None):
+                        shape=None, crpix=None, crval=None, wavelength=None):
     """
     Create a WCS from a list of input data models.
 
@@ -256,6 +262,10 @@ def wcs_from_footprints(dmodels, refmodel=None, transform=None, bounding_box=Non
     crval : tuple of float, None, optional
         Right ascension and declination of the reference pixel. Automatically
         computed if not provided.
+    wavelegnth : float
+        Central wavelength or other appropriate wavelength value to pass to
+        the inverse transform when computing the reference point on the detector,
+        as well as the scale.
 
     """
     bb = bounding_box
@@ -273,7 +283,8 @@ def wcs_from_footprints(dmodels, refmodel=None, transform=None, bounding_box=Non
         if not isinstance(refmodel, JwstDataModel):
             raise TypeError("Expected refmodel to be an instance of DataModel.")
 
-    fiducial = compute_fiducial(wcslist, bb)
+    fiducial = compute_fiducial(wcslist, bb)[:2]
+
     if crval is not None:
         # overwrite spatial axes with user-provided CRVAL:
         i = 0
@@ -289,7 +300,14 @@ def wcs_from_footprints(dmodels, refmodel=None, transform=None, bounding_box=Non
     if transform is None:
         transform = []
         wcsinfo = pointing.wcsinfo_from_model(refmodel)
-        sky_axes, spec, other = gwutils.get_axes(wcsinfo)
+        # sky_axes, spec, other = gwutils.get_axes(wcsinfo)
+        axes_type = np.array(refmodel.meta.wcs.output_frame.axes_type)
+        sky_axes = np.array(refmodel.meta.wcs.output_frame.axes_order)[axes_type == "SPATIAL"]
+        spec = np.array(refmodel.meta.wcs.output_frame.axes_order)[axes_type == "SPECTRAL"]
+
+        if spec and wavelength is None:
+            # wavelength = refmodel.meta.wcsinfo.wave_range # not all modes have that
+            raise ValueError("wavelelngth is a required parameter for spectral data.")
 
         # Need to put the rotation matrix (List[float, float, float, float])
         # returned from calc_rotation_matrix into the correct shape for
@@ -308,28 +326,32 @@ def wcs_from_footprints(dmodels, refmodel=None, transform=None, bounding_box=Non
 
         rotation = astmodels.AffineTransformation2D(pc, name='pc_rotation_matrix')
         transform.append(rotation)
-
-        if sky_axes:
+        print(f'before pscale, {sky_axes}')
+        if sky_axes.any():
+            print(f'after pscale, {sky_axes}')
             if not pscale:
+                print('computing pscale')
+                if spec.any():
+                    dispaxis = refmodel.meta.wcsinfo.dispersion_direction
                 pscale = compute_scale(refmodel.meta.wcs, ref_fiducial,
-                                       pscale_ratio=pscale_ratio)
+                                       pscale_ratio=pscale_ratio, disp_axis=dispaxis, wavelength=wavelength)
             transform.append(astmodels.Scale(pscale, name='cdelt1') & astmodels.Scale(pscale, name='cdelt2'))
-
+            print(f'computed pscale as {pscale}')
         if transform:
             transform = functools.reduce(lambda x, y: x | y, transform)
 
     out_frame = refmodel.meta.wcs.output_frame
     input_frame = refmodel.meta.wcs.input_frame
-    wnew = wcs_from_fiducial(fiducial, coordinate_frame=out_frame, projection=prj,
+    wnew = wcs_from_fiducial(fiducial, coordinate_frame=out_frame.frames[0], projection=prj,
                              transform=transform, input_frame=input_frame)
 
-    footprints = [w.footprint().T for w in wcslist]
+    footprints = [w.footprint().T[:2] for w in wcslist]
     domain_bounds = np.hstack([wnew.backward_transform(*f) for f in footprints])
     axis_min_values = np.min(domain_bounds, axis=1)
     domain_bounds = (domain_bounds.T - axis_min_values).T
 
     output_bounding_box = []
-    for axis in out_frame.axes_order:
+    for axis in input_frame.axes_order:
         axis_min, axis_max = domain_bounds[axis].min(), domain_bounds[axis].max()
         output_bounding_box.append((axis_min, axis_max))
 

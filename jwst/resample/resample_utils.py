@@ -145,9 +145,9 @@ def reproject(wcs1, wcs2):
     """
 
     if isinstance(wcs1, fitswcs.WCS):
-        forward_transform = wcs1.all_pix2world
+        forward_transform = wcs1.pixel_to_world_values
     elif isinstance(wcs1, gwcs.WCS):
-        forward_transform = wcs1.forward_transform
+        forward_transform = wcs1.pixel_to_world_values
     elif issubclass(wcs1, Model):
         forward_transform = wcs1
     else:
@@ -155,9 +155,9 @@ def reproject(wcs1, wcs2):
                         "object or astropy.modeling.Model subclass")
 
     if isinstance(wcs2, fitswcs.WCS):
-        backward_transform = wcs2.all_world2pix
+        backward_transform = wcs2.world_to_pixel_values
     elif isinstance(wcs2, gwcs.WCS):
-        backward_transform = wcs2.backward_transform
+        backward_transform = wcs2.world_to_pixel_values
     elif issubclass(wcs2, Model):
         backward_transform = wcs2.inverse
     else:
@@ -165,18 +165,19 @@ def reproject(wcs1, wcs2):
                         "object or astropy.modeling.Model subclass")
 
     def _reproject(x, y):
-        sky = forward_transform(x, y)
-        flat_sky = []
-        for axis in sky:
-            flat_sky.append(axis.flatten())
-        # Filter out RuntimeWarnings due to computed NaNs in the WCS
-        warnings.simplefilter("ignore")
-        det = backward_transform(*tuple(flat_sky))
-        warnings.resetwarnings()
-        det_reshaped = []
-        for axis in det:
-            det_reshaped.append(axis.reshape(x.shape))
-        return tuple(det_reshaped)
+        # sky = forward_transform(x, y)
+        # flat_sky = []
+        # for axis in sky:
+        #     flat_sky.append(axis.flatten())
+        # # Filter out RuntimeWarnings due to computed NaNs in the WCS
+        # warnings.simplefilter("ignore")
+        # det = backward_transform(*tuple(flat_sky))
+        # warnings.resetwarnings()
+        # det_reshaped = []
+        # for axis in det:
+        #     det_reshaped.append(axis.reshape(x.shape))
+        # return tuple(det_reshaped)
+        return backward_transform(*forward_transform(x, y))
     return _reproject
 
 
