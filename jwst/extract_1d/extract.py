@@ -3395,7 +3395,8 @@ def extract_one_slit(
     if input_dq.size == 0:
         input_dq = None
 
-    wl_array = get_wavelengths(input_model if slit is None else slit, exp_type, extract_params['spectral_order'])
+    inp = input_model if slit is None else slit
+    wl_array = get_wavelengths(inp, exp_type, extract_params['spectral_order'])
     data = replace_bad_values(data, input_dq, wl_array)
 
     if extract_params['ref_file_type'] == FILE_TYPE_IMAGE:  # The reference file is an image.

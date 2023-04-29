@@ -167,6 +167,7 @@ def lrs(input_model, reference_files):
     Uses the "specwcs" and "distortion" reference files.
 
     """
+    input_model.meta.wcsinfo.wcsaxes = 3
     # Define the various coordinate frames.
     # Original detector frame
     detector = cf.Frame2D(name='detector', axes_order=(0, 1), unit=(u.pix, u.pix))
@@ -311,6 +312,11 @@ def lrs_distortion(input_model, reference_files):
     # Work out the spectral component of the transform
     # First compute the reference trace in the rotated-Y frame
     xcenrot, ycenrot = rot(xcen, ycen)
+    # below this is wrong
+    # rot_trace = (models.Shift(-zero_point[0]) & models.Shift(-zero_point[1]) | rot |
+    #              models.Shift(zero_point[0]) & models.Shift(zero_point[1]))
+    # xcenrot, ycenrot = rot_trace(xcen, ycen)
+
     # The input table of wavelengths isn't perfect, and the delta-wavelength
     # steps show some unphysical behaviour
     # Therefore fit with a spline for the ycenrot->wavelength transform
@@ -318,13 +324,15 @@ def lrs_distortion(input_model, reference_files):
     yrev = ycenrot[::-1]
     wrev = wavetab[::-1]
     # Spline fit with enforced smoothness
-    spl = UnivariateSpline(yrev, wrev, s=0.002)
+    #spl = UnivariateSpline(yrev, wrev, s=0.002)
     # Evaluate the fit at the rotated-y reference points
-    wavereference = spl(yrev)
+    #wavereference = spl(yrev)
     # wavereference now contains the wavelengths corresponding to regularly-sampled ycenrot, create the model
-    wavemodel = models.Tabular1D(lookup_table=wavereference, points=yrev, name='waveref',
-                                 bounds_error=False, fill_value=np.nan)
-
+    # wavemodel = models.Tabular1D(lookup_table=wavereference, points=yrev, name='waveref',
+    #                              bounds_error=False, fill_value=np.nan)
+    wavemodel = models.Tabular1D(lookup_table=wrev, points=yrev, name='waveref',
+                                bounds_error=False, fill_value=np.nan)
+    '''
     # Now construct the inverse spectral transform.
     # First we need to create a spline going from wavereference -> ycenrot
     spl2 = UnivariateSpline(wavereference[::-1], ycenrot, s=0.002)
@@ -340,6 +348,7 @@ def lrs_distortion(input_model, reference_files):
     # regularly-sampled wavelengths, create the model
     wavemodel.inverse = models.Tabular1D(lookup_table=ygrid, points=wgrid, name='waverefinv',
                                          bounds_error=False, fill_value=np.nan)
+    '''
 
     # Wavelength barycentric correction
     try:

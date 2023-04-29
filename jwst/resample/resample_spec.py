@@ -356,16 +356,16 @@ class ResampleSpecData(ResampleData):
             from jwst.assign_wcs.util import wcs_from_footprints
             # the spatial scale of the output wcs
             log.info(f"{model.__class__.__name__}")
-            wnew = wcs_from_footprints([model], 10)
+            wnew = wcs_from_footprints([model], wavelength=10)
             if im == 0:
-                wnew = wcs_from_footprints([model], 10)
+                #wnew = wcs_from_footprints([model], 10)
                 # from stpipe import crds_client
                 # from astropy.io import fits
                 # ref_file = crds_client.reference_uri_to_cache_path(model.meta.ref_file.specwcs.name, "jwst")
                 # with fits.open(ref_file) as rf:
                 #
                 #     zero_point = [rf[0].header['imx'] - 1, rf[0].header['imy'] - 1]
-                # all_wavelength = np.append(all_wavelength, wavelength_array)
+                all_wavelength = np.append(all_wavelength, wavelength_array)
                 #
                 # # find the center ra and dec for this slit at central wavelength
                 lam_center_index = int((bbox[spectral_axis][1] -
@@ -449,9 +449,9 @@ class ResampleSpecData(ResampleData):
         # done looping over set of models
         # all_ra = np.hstack(all_ra_slit)
         # all_dec = np.hstack(all_dec_slit)
-        # all_wave = np.hstack(all_wavelength)
-        # all_wave = all_wave[~np.isnan(all_wave)]
-        # all_wave = np.sort(all_wave, axis=None)
+        all_wave = np.hstack(all_wavelength)
+        all_wave = all_wave[~np.isnan(all_wave)]
+        all_wave = np.sort(all_wave, axis=None)
         # Tabular interpolation model, pixels -> lambda
         wavelength_array = np.unique(all_wave)
         # Check if the data is MIRI LRS FIXED Slit. If it is then
@@ -485,19 +485,19 @@ class ResampleSpecData(ResampleData):
                                               name='wavelength2pix')
 
         # For the input mapping, duplicate the spatial coordinate
-        #mapping = Mapping((spatial_axis, spatial_axis, spectral_axis))
-        mapping = Mapping((spatial_axis, spectral_axis, spectral_axis))
+        mapping = Mapping((spatial_axis, spatial_axis, spectral_axis))
+        #mapping = Mapping((spatial_axis, spectral_axi, spectral_axis))
         # Sometimes the slit is perpendicular to the RA or Dec axis.
         # For example, if the slit is perpendicular to RA, that means
         # the slope of pix_to_xtan will be nearly zero, so make sure
         # mapping.inverse uses pix_to_ytan.inverse.  The auto definition
         # of mapping.inverse is to use the 2nd spatial coordinate, i.e. Dec.
 
-        swap_xy = np.isclose(pix_to_xtan.slope, 0, atol=1e-8)
-        log.debug(f"Swapped x and y axes is {swap_xy}")
-        if swap_xy:
+        #swap_xy = np.isclose(pix_to_xtan.slope, 0, atol=1e-8)
+        #log.debug(f"Swapped x and y axes is {swap_xy}")
+        #if swap_xy:
             # Account for vertical or horizontal dispersion on detector
-            mapping.inverse = Mapping((2, 1) if spatial_axis else (1, 2))
+            #mapping.inverse = Mapping((2, 1) if spatial_axis else (1, 2))
 
         # The final transform
         # redefine the ra, dec center tangent point to include all data
@@ -547,7 +547,7 @@ class ResampleSpecData(ResampleData):
         #transform = mapping | (pix_to_xtan & pix_to_ytan | undist2sky) & pix_to_wavelength
         ft = wnew.forward_transform
 
-        transform = mapping | (ft * pix_to_wavelength)
+        transform = mapping | (ft & pix_to_wavelength)
         det = cf.Frame2D(name='detector', axes_order=(0, 1))
         sky = cf.CelestialFrame(name='sky', axes_order=(0, 1),
                                 reference_frame=coord.ICRS())
@@ -561,16 +561,31 @@ class ResampleSpecData(ResampleData):
         output_wcs = WCS(pipeline)
 
         # compute the output array size in WCS axes order, i.e. (x, y)
+        # output_array_size = [0, 0]
+        # output_array_size[spectral_axis] = int(np.ceil(len(wavelength_array) / self.pscale_ratio))
+        # output_array_size[spatial_axis] = int(np.ceil(x_size / self.pscale_ratio))
+        #
+        # # turn the size into a numpy shape in (y, x) order
+        # output_wcs.array_shape = output_array_size[::-1]
+        # output_wcs.pixel_shape = output_array_size
+        # bounding_box = resample_utils.wcs_bbox_from_shape(output_array_size[::-1])
+
+        #output_wcs.bounding_box = wnew.bounding_box
         output_array_size = [0, 0]
         output_array_size[spectral_axis] = int(np.ceil(len(wavelength_array) / self.pscale_ratio))
-        output_array_size[spatial_axis] = int(np.ceil(x_size / self.pscale_ratio))
+        #output_array_size[spatial_axis] = int(np.ceil(x_size / self.pscale_ratio))
+        # output_array_size[spectral_axis] = int((wnew.bounding_box[spectral_axis][1] -
+        #                                     wnew.bounding_box[spectral_axis][0]) / self.pscale_ratio)
+        output_array_size[spatial_axis] = int((wnew.bounding_box[spatial_axis][1] -
+                                               wnew.bounding_box[spatial_axis][0]) / self.pscale_ratio)
+
+
 
         # turn the size into a numpy shape in (y, x) order
         output_wcs.array_shape = output_array_size[::-1]
         output_wcs.pixel_shape = output_array_size
         bounding_box = resample_utils.wcs_bbox_from_shape(output_array_size[::-1])
         output_wcs.bounding_box = bounding_box
-
         return output_wcs
 
     '''
