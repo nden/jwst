@@ -29,7 +29,7 @@ from jwst.assign_wcs.util import MSAFileError, in_ifu_slice
 data_path = os.path.split(os.path.abspath(data.__file__))[0]
 
 
-wcs_kw = {'wcsaxes': 2, 'ra_ref': 165, 'dec_ref': 54,
+wcs_kw = {'wcsaxes': 2, 'ra_ref': 165, 'dec_ref': 54, 'v3i_yang': 0, 'vparity': -1,
           'v2_ref': -8.3942412, 'v3_ref': -5.3123744, 'roll_ref': 37,
           'crpix1': 1024, 'crpix2': 1024,
           'cdelt1': .08, 'cdelt2': .08,

@@ -10,7 +10,7 @@ from stdatamodels.jwst.transforms import models
 
 import jwst
 from jwst.assign_wcs import AssignWcsStep
-from jwst.extract_2d import Extract2dStep
+from jwst.extract_2d import Extract2dStep, nirspec
 from jwst.srctype import SourceTypeStep
 from jwst.wavecorr import WavecorrStep
 from jwst.wavecorr import wavecorr
@@ -78,6 +78,15 @@ def test_skipped():
 
     # Test an error is raised if assign_wcs or extract_2d were not run.
     im.meta.exposure.type = 'NRS_FIXEDSLIT'
+
+    dither = {'x_offset': 0.0, 'y_offset': 0.0}
+    im.meta.dither = dither
+    im.meta.wcsinfo.v3yangle = 138.78
+    im.meta.wcsinfo.vparity = -1
+    im.meta.wcsinfo.v2_ref = 321.87
+    im.meta.wcsinfo.v3_ref = -477.94
+    im.meta.wcsinfo.roll_ref = 15.1234
+    im.meta.wcsinfo.v3yangle = 138.78
     with pytest.raises(AttributeError):
         WavecorrStep.call(im)
 
@@ -96,19 +105,10 @@ def test_skipped():
     assert out.meta.cal_step.wavecorr == "SKIPPED"
 
     outs.meta.instrument.fixed_slit = "S400A1"
-
+    ind = np.nonzero([s.name == 'S400A1' for s in outs.slits])[0].item()
     # Test step is skipped if meta.dither is not populated
     outw = WavecorrStep.call(outs)
     assert out.meta.cal_step.wavecorr == "SKIPPED"
-
-    dither = {'x_offset': 0.0, 'y_offset': 0.0}
-    ind = np.nonzero([s.name == 'S400A1' for s in outs.slits])[0].item()
-    outs.slits[ind].meta.dither = dither
-    outs.slits[ind].meta.wcsinfo.v3yangle = 138.78
-    outs.slits[ind].meta.wcsinfo.vparity = -1
-    outs.slits[ind].meta.wcsinfo.v2_ref = 321.87
-    outs.slits[ind].meta.wcsinfo.v3_ref = -477.94
-    outs.slits[ind].meta.wcsinfo.roll_ref = 15.1234
 
     # Test step is skipped if source is "EXTENDED"
     outw = WavecorrStep.call(outs)
@@ -161,8 +161,8 @@ def test_wavecorr_fs():
     assert_allclose(result.slits[0].source_xpos, 0.127111, atol=1e-6)
 
     slit = result.slits[0]
-    source_xpos = wavecorr.get_source_xpos(slit, slit.meta.wcs, lam=2)
-    assert_allclose(result.slits[0].source_xpos, source_xpos, atol=1e-6)
+    source_xpos = nirspec.get_source_xypos_fs(slit, slit.meta.wcs, lam=2)
+    assert_allclose((result.slits[0].source_xpos, result.slits[0].source_ypos), source_xpos, atol=1e-6)
 
     mean_correction = np.abs(src_result.slits[0].wavelength - result.slits[0].wavelength)
     assert_allclose(np.nanmean(mean_correction), 0.003, atol=.001)

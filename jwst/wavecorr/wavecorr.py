@@ -29,6 +29,7 @@ Both ways give the same result, the current code uses the first one.
 """
 import logging
 import numpy as np
+from astropy.utils import deprecated
 from gwcs import wcstools
 
 from stdatamodels.jwst import datamodels
@@ -120,7 +121,7 @@ def apply_zero_point_correction(slit, reffile):
     if slit.meta.exposure.type in ['NRS_FIXEDSLIT', 'NRS_BRIGHTOBJ']:
         # pass lam = 2 microns
         # needed for wavecorr with fixed slits
-        source_xpos = get_source_xpos(slit, slit_wcs, lam=2)
+        source_xpos = slit.source_xpos
         aperture_name = slit.name
     else:
         source_xpos = slit.source_xpos
@@ -251,7 +252,7 @@ def _is_point_source(slit, exp_type):
 
     return result
 
-
+@deprecated("10.2", message="Replaced by extract_2d.nirspec.get_source_xypo_fs")
 def get_source_xpos(slit, slit_wcs, lam):
     """
     Compute the source position within the slit for a NIRSpec fixed slit.
