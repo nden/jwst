@@ -133,6 +133,15 @@ class ResampleSpecData(ResampleData):
         bbox = refwcs.bounding_box
         grid = wcstools.grid_from_bounding_box(bbox)
         _, s, lam = np.array(d2s(*grid))
+
+        # Replace wavelength with wavelength array corrected by wavecorr.
+        try:
+            if lam.shape == refmodel.wavelength.shape:
+                lam = refmodel.wavelength.copy()
+            else:
+                warning.warn("Not using wavecorr wavelength arrays, shapes don't match.")
+        except AttributeError:
+            pass
         sd = s * refmodel_data
         ld = lam * refmodel_data
         good_s = np.isfinite(sd)
@@ -160,7 +169,9 @@ class ResampleSpecData(ResampleData):
         lam = 1e-6 * ref_lam
 
         # Find the spatial pixel scale:
-        y_slit_min, y_slit_max = self._max_virtual_slit_extent(all_wcs, targ_ra, targ_dec)
+        all_wave_arrays = [m.wavelength for m in self.input_models if m is not refmodel]
+        y_slit_min, y_slit_max = self._max_virtual_slit_extent_new(all_wave_arrays, targ_ra, targ_dec)
+        #y_slit_min, y_slit_max = self._max_virtual_slit_extent(all_wcs, targ_ra, targ_dec)
 
         nsampl = 50
         xy_min = s2d(
@@ -288,6 +299,57 @@ class ResampleSpecData(ResampleData):
             ra, dec, lam = wcs(x, y)
 
             good = np.logical_and(np.isfinite(ra), np.isfinite(dec))
+            x = x[good]
+            y = y[good]
+            lm = lam[good]
+
+            _, yslit, _ = d2s(x, y)
+
+            # position of the target in the slit relative to its position
+            # for the refence image:
+            ts = w2s(target_ra, target_dec, np.mean(lm))[1] - t0
+
+            if wcs is wcs_list[0]:
+                t0 = ts
+                ts = 0
+
+            y_slit_min_i = np.min(yslit) - ts
+            y_slit_max_i = np.max(yslit) - ts
+
+            if y_slit_min_i < y_slit_min:
+                y_slit_min = y_slit_min_i
+
+            if y_slit_max_i > y_slit_max:
+                y_slit_max = y_slit_max_i
+
+        return y_slit_min, y_slit_max
+
+    def _max_virtual_slit_extent_new(self, wcs_list, wave_list, target_ra, target_dec):
+        """
+        Compute min & max slit coordinates for all nods in the "virtual"
+        slit frame.
+
+        NOTE: this code, potentially, might have troubles dealing
+              with large dithers such that ``target_ra`` and ``target_dec``
+              may not be converted to slit frame (i.e., result in ``NaN``).
+
+              A more sophisticated algorithm may be needed to "stitch" large
+              dithers. But then distortions may come into play.
+        """
+        y_slit_min = np.inf
+        y_slit_max = -np.inf
+
+        t0 = 0
+
+        for wcs, wave in zip([wcs_list, wave_list]):
+            # d2s = wcs.get_transform('detector', 'slit_frame')
+            w2s = wcs.get_transform('world', 'slit_frame')
+            #
+            # x, y = wcstools.grid_from_bounding_box(wcs.bounding_box)
+            # ra, dec, lam = wcs(x, y)
+            lam = wcs
+            # good = np.logical_and(np.isfinite(ra), np.isfinite(dec))
+            good = np.isfinite(wcs)
             x = x[good]
             y = y[good]
             lm = lam[good]
@@ -583,6 +645,11 @@ class ResampleSpecData(ResampleData):
         bbox = wcs.bounding_box
         grid = wcstools.grid_from_bounding_box(bbox)
         x_msa, y_msa, lam = np.array(wcs(*grid))
+
+        try:
+            lam = model.wavelength
+        except AttributeError:
+            pass
         # Handle vertical (MIRI) or horizontal (NIRSpec) dispersion.  The
         # following 2 variables are 0 or 1, i.e. zero-indexed in x,y WCS order
         spectral_axis = find_dispersion_axis(model)
