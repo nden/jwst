@@ -17,7 +17,9 @@ from stdatamodels.jwst import datamodels
 
 from jwst.datamodels import ModelContainer
 
-from ..assign_wcs.util import wrap_ra
+from jwst.assign_wcs.util import wrap_ra
+from jwst.wavecorr.wavecorr import _is_point_source
+from jwst.wavecorr.wavecorr_step import WAVECORR_SUPPORTED_MODES
 from . import resample_utils
 from .resample import ResampleData
 
@@ -26,6 +28,17 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
 _S2C = SphericalToCartesian()
+
+
+def _use_wavecorr(model, lam):
+    # Replace wavelength with wavelength array corrected by wavecorr.
+    try:
+        if lam.shape == refmodel.wavelength.shape:
+            lam = refmodel.wavelength.copy()
+        else:
+            warning.warn("Not using wavecorr wavelength arrays, shapes don't match.")
+    except AttributeError:
+        pass
 
 
 class ResampleSpecData(ResampleData):
@@ -103,16 +116,10 @@ class ResampleSpecData(ResampleData):
         log.info(f"Driz parameter fillval: {self.fillval}")
         log.info(f"Driz parameter weight_type: {self.weight_type}")
 
-    def build_nirspec_output_wcs(self, refmodel=None):
-        """
-        Create a spatial/spectral WCS covering footprint of the input
-        """
-        all_wcs = [m.meta.wcs for m in self.input_models if m is not refmodel]
-        if refmodel:
-            all_wcs.insert(0, refmodel.meta.wcs)
-        else:
-            refmodel = self.input_models[0]
-
+    def _mean_target_position(self, refmodel, ra, dec, lam):
+        # estimate position of the target without relying on the meta.target:
+        # compute the mean spatial and wavelength coords weighted
+        # by the spectral intensity
         # make a copy of the data array for internal manipulation
         refmodel_data = refmodel.data.copy()
         # renormalize to the minimum value, for best results when
@@ -135,13 +142,11 @@ class ResampleSpecData(ResampleData):
         _, s, lam = np.array(d2s(*grid))
 
         # Replace wavelength with wavelength array corrected by wavecorr.
-        try:
-            if lam.shape == refmodel.wavelength.shape:
-                lam = refmodel.wavelength.copy()
-            else:
-                warning.warn("Not using wavecorr wavelength arrays, shapes don't match.")
-        except AttributeError:
-            pass
+        exp_type = refmodel.meta.exposure.type.lower()
+        if exp_type in WAVECORR_SUPPORTED_MODES:
+            if _is_point_source(refmodel, exp_type):
+                lam = _use_wavecorr(refmodel, lam)
+
         sd = s * refmodel_data
         ld = lam * refmodel_data
         good_s = np.isfinite(sd)
@@ -155,6 +160,62 @@ class ResampleSpecData(ResampleData):
 
         # transform the weighted means into target RA/Dec
         targ_ra, targ_dec, _ = s2w(0, wmean_s, wmean_l)
+        return tra, tdec
+
+    def build_nirspec_output_wcs(self, refmodel=None):
+        """
+        Create a spatial/spectral WCS covering footprint of the input
+        """
+        all_wcs = [m.meta.wcs for m in self.input_models if m is not refmodel]
+        if refmodel:
+            all_wcs.insert(0, refmodel.meta.wcs)
+        else:
+            refmodel = self.input_models[0]
+
+        # # make a copy of the data array for internal manipulation
+        # refmodel_data = refmodel.data.copy()
+        # # renormalize to the minimum value, for best results when
+        # # computing the weighted mean below
+        # refmodel_data -= np.nanmin(refmodel_data)
+        #
+        # # save the wcs of the reference model
+        # refwcs = refmodel.meta.wcs
+        #
+        # # setup the transforms that are needed
+        # s2d = refwcs.get_transform('slit_frame', 'detector')
+        # d2s = refwcs.get_transform('detector', 'slit_frame')
+        # s2w = refwcs.get_transform('slit_frame', 'world')
+        #
+        # bbox = refwcs.bounding_box
+        # grid = wcstools.grid_from_bounding_box(bbox)
+        # _, s, lam = np.array(d2s(*grid))
+        #
+        # # estimate position of the target without relying on the meta.target:
+        # # compute the mean spatial and wavelength coords weighted
+        # # by the spectral intensity
+        # bbox = refwcs.bounding_box
+        # grid = wcstools.grid_from_bounding_box(bbox)
+        # _, s, lam = np.array(d2s(*grid))
+        #
+        # # Replace wavelength with wavelength array corrected by wavecorr.
+        # exp_type = refmodel.meta.exposure.type.lower()
+        # if exp_type in WAVECORR_SUPPORTED_MODES:
+        #     if _is_point_source(refmodel, exp_type):
+        #         lam = _use_wavecorr(refmodel, lam)
+        #
+        # sd = s * refmodel_data
+        # ld = lam * refmodel_data
+        # good_s = np.isfinite(sd)
+        # if np.any(good_s):
+        #     total = np.sum(refmodel_data[good_s])
+        #     wmean_s = np.sum(sd[good_s]) / total
+        #     wmean_l = np.sum(ld[good_s]) / total
+        # else:
+        #     wmean_s = 0.5 * (refmodel.slit_ymax - refmodel.slit_ymin)
+        #     wmean_l = d2s(*np.mean(bbox, axis=1))[2]
+        #
+        # # transform the weighted means into target RA/Dec
+        # targ_ra, targ_dec, _ = s2w(0, wmean_s, wmean_l)
 
         ref_lam = _find_nirspec_output_sampling_wavelengths(
             all_wcs,
@@ -754,16 +815,18 @@ def _spherical_sep(j, k, wcs, xyz_ref):
     return 1 - np.dot(_S2C(ra, dec), xyz_ref)
 
 
-def _find_nirspec_output_sampling_wavelengths(wcs_list, targ_ra, targ_dec, mode='median'):
+def _find_nirspec_output_sampling_wavelengths(wcs_list, targ_ra, targ_dec, ref_lambdas, mode='median'):
     assert mode in ['median', 'fast', 'accurate']
     refwcs = wcs_list[0]
     bbox = refwcs.bounding_box
 
     grid = wcstools.grid_from_bounding_box(bbox)
-    ra, dec, lambdas = refwcs(*grid)
+    #try to replace these
+    #ra, dec, lambdas = refwcs(*grid)
 
     if mode == 'median':
-        ref_lam = sorted(np.nanmedian(lambdas[:, np.any(np.isfinite(lambdas), axis=0)], axis=0))
+        #ref_lam = sorted(np.nanmedian(lambdas[:, np.any(np.isfinite(lambdas), axis=0)], axis=0))
+        ref_lam = sorted(np.nanmedian(lambdas, axis=0))
     else:
         ref_lam, _, _ = _find_nirspec_sampling_wavelengths(
             refwcs,

@@ -1,3 +1,15 @@
+"""
+The ``wavecorr`` step is applied to Nirspec MOS or FS observations of point
+sources. The NIRSpec instrument model is calibraated for the center of the slit.
+This step applies a small correction to the computed wavelengths when the
+sources are off the center of the slit. The correction is appled to all
+MOS slitlets and to the ``primary`` fixed slit.
+
+Note: This step needs to run after the ``SourceTypeStep`` because it uses
+``slit.source_type``.
+
+"""
+
 #! /usr/bin/env python
 from stdatamodels.jwst import datamodels
 
@@ -5,6 +17,10 @@ from ..stpipe import Step
 from . import wavecorr
 
 __all__ = ["WavecorrStep"]
+
+
+WAVECORR_SUPPORTED_MODES = ['NRS_FIXEDSLIT', 'NRS_MSASPEC', 'NRS_BRIGHTOBJ',
+                            'NRS_AUTOFLAT']
 
 
 class WavecorrStep(Step):
@@ -21,15 +37,12 @@ class WavecorrStep(Step):
 
     def process(self, step_input):
 
-        wavecorr_supported_modes = ['NRS_FIXEDSLIT', 'NRS_MSASPEC', 'NRS_BRIGHTOBJ',
-                                    'NRS_AUTOFLAT']
-
         # Open the input
         with datamodels.open(step_input) as input_model:
 
             # Check for valid exposure type
             exp_type = input_model.meta.exposure.type.upper()
-            if exp_type not in wavecorr_supported_modes:
+            if exp_type not in WAVECORR_SUPPORTED_MODES:
                 self.log.info(f'Skipping wavecorr correction for EXP_TYPE {exp_type}')
                 input_model.meta.cal_step.wavecorr = "SKIPPED"
                 return input_model

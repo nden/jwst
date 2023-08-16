@@ -8,6 +8,7 @@ from gwcs.utils import _toindex
 from gwcs import wcstools
 
 from stdatamodels.jwst import datamodels
+from stdatamodels.jwst.transforms import models as trmodels
 
 from ..assign_wcs import nirspec
 from ..assign_wcs import util
@@ -166,6 +167,10 @@ def set_slit_attributes(output_model, slit, xlo, xhi, ylo, yhi):
         output_model.source_dec = float(slit.source_dec)
         # for pathloss correction
         output_model.shutter_state = slit.shutter_state
+    elif output_model.meta.exposure.type.lower() in ['nrs_brightobj', 'nrs_fixedslit']:
+        xpos, ypos = get_source_xypos_fs(output_model, output_model.meta.wcs, lam=2)
+        output_model.source_xpos = xpos
+        output_model.source_ypos = ypos
     log.info('set slit_attributes completed')
 
 
@@ -253,3 +258,80 @@ def extract_slit(input_model, slit, exp_type):
     new_model.meta.wcs = slit_wcs
 
     return new_model, xlo, xhi, ylo, yhi
+
+
+def get_source_xypos_fs(slit, slit_wcs, lam):
+    """
+    Compute the source position within the slit for a NIRSpec fixed slit.
+
+    Parameters
+    ----------
+    slit : `~jwst.datamodels.SlitModel`
+        The slit object.
+    slit_wcs : `~gwcs.wcs.WCS`
+        The WCS object for this slit.
+    lam : float
+        Wavelength in microns.
+
+    Returns
+    -------
+    xpos, ypos : float
+        X, Y coordinates of the source as a fraction of the slit size.
+    """
+    xoffset = slit.meta.dither.x_offset  # in arcsec
+    yoffset = slit.meta.dither.y_offset  # in arcsec
+    v2ref = slit.meta.wcsinfo.v2_ref  # in arcsec
+    v3ref = slit.meta.wcsinfo.v3_ref  # in arcsec
+    v3idlyangle = slit.meta.wcsinfo.v3yangle  # in deg
+    vparity = slit.meta.wcsinfo.vparity
+
+    idl2v23 = trmodels.IdealToV2V3(v3idlyangle, v2ref, v3ref, vparity)
+    log.debug("wcsinfo: {0}, {1}, {2}, {3}".format(v2ref, v3ref, v3idlyangle, vparity))
+    # Compute the location in V2,V3 [in arcsec]
+    xv, yv = idl2v23(xoffset, yoffset)
+    log.info(f'xoffset, yoffset, {xoffset}, {yoffset}')
+
+    # Position in the virtual slit
+    xpos_slit, ypos_slit, _ = slit.meta.wcs.get_transform('v2v3', 'slit_frame')(
+        xv, yv, 2)
+    # # Update slit.source_xpos, slit.source_ypos
+    # slit.source_xpos = xpos_slit
+    # slit.source_ypos = ypos_slit
+    log.debug('Source X/Y position in V2V3: {0}, {1}'.format(xv, yv))
+    log.info('Source X/Y position in the slit: {0}, {1}'.format(xpos_slit, ypos_slit))
+
+    return xpos_slit, ypos_slit
+
+
+def _is_point_source(slit, exp_type):
+    """
+    Determine if a source is a point source.
+
+    Parameters
+    ----------
+    slit : `~stdatamodels.jwst.transforms.models.Slit`
+        A slit object.
+    exp_type : str
+        The exposure type
+    """
+    result = False
+
+    # Get the source type value set by the source_type step (if any)
+    if slit.source_type is not None:
+        src_type = slit.source_type
+    elif slit.meta.target.source_type is not None:
+        src_type = slit.meta.target.source_type
+    else:
+        src_type = None
+
+    if src_type is not None and src_type.upper() in ['POINT', 'EXTENDED']:
+        # Use the supplied value
+        log.info(f'Detected a {src_type} source type in slit {slit.name}')
+        if src_type.strip().upper() == 'POINT':
+            result = True
+        else:
+            result = False
+    else:
+        log.info("Unknown source type")
+
+    return result
