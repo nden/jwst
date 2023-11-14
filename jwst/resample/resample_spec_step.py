@@ -6,7 +6,7 @@ from stdatamodels.jwst.datamodels import MultiSlitModel, ImageModel
 from jwst.datamodels import ModelContainer
 from . import resample_spec, ResampleStep
 from ..exp_to_source import multislit_to_container
-from ..assign_wcs.util import update_s_region_spectral
+
 
 # Force use of all DQ flagged data except for DO_NOT_USE and NON_SCIENCE
 GOOD_BITS = '~DO_NOT_USE+NON_SCIENCE'
@@ -137,7 +137,6 @@ class ResampleSpecStep(ResampleStep):
 
             for model in drizzled_models:
                 self.update_slit_metadata(model)
-                update_s_region_spectral(model)
                 result.slits.append(model)
 
         result.meta.cal_step.resample = "COMPLETE"
@@ -176,7 +175,6 @@ class ResampleSpecStep(ResampleStep):
         result.meta.resample.pixel_scale_ratio = self.pixel_scale_ratio
         result.meta.resample.pixfrac = self.pixfrac
         self.update_slit_metadata(result)
-        update_s_region_spectral(result)
 
         return result
 
