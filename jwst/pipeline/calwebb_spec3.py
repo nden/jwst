@@ -164,43 +164,45 @@ class Spec3Pipeline(Pipeline):
         sources = [source_models]
         if model_type in MULTISOURCE_MODELS:
             self.log.info('Convert from exposure-based to source-based data.')
-            sources = [
-                (name, model)
-                for name, model in multislit_to_container(source_models).items()
-            ]
-
-            # Check for negative and large source_id values
-            if len(sources) > 99999:
-                self.log.critical("Data contain more than 100,000 sources;"
-                                  "filename does not support 6 digit source ids.")
-                raise Exception
-
-            available_src_ids = set(np.arange(99999) + 1)
-            used_src_ids = set()
-            for src in sources:
-                src_id, model = src
-                src_id = int(src_id)
-                used_src_ids.add(src_id)
-                if 0 < src_id <= 99999:
-                    available_src_ids.remove(src_id)
-
-            hotfixed_sources = []
-            # now find and reset bad source_id values
-            for src in sources:
-                src_id, model = src
-                src_id = int(src_id)
-                # Replace ids that aren't positive 5-digit integers
-                if src_id < 0 or src_id > 99999:
-                    src_id_new = available_src_ids.pop()
-                    self.log.info(f"Source ID {src_id} falls outside allowed range.")
-                    self.log.info(f"Reassigning {src_id} to {str(src_id_new).zfill(5)}.")
-                    # Replace source_id for each model in the SourceModelContainers
-                    for contained_model in model:
-                        contained_model.source_id = src_id_new
-                    src_id = src_id_new
-                hotfixed_sources.append((str(src_id), model))
-
-            sources = hotfixed_sources
+            from jwst.datamodels import exposure_to_source
+            # sources = [
+            #     (name, model)
+            #     for name, model in multislit_to_container(source_models).items()
+            # ]
+            #
+            # # Check for negative and large source_id values
+            # if len(sources) > 99999:
+            #     self.log.critical("Data contain more than 100,000 sources;"
+            #                       "filename does not support 6 digit source ids.")
+            #     raise Exception
+            #
+            # available_src_ids = set(np.arange(99999) + 1)
+            # used_src_ids = set()
+            # for src in sources:
+            #     src_id, model = src
+            #     src_id = int(src_id)
+            #     used_src_ids.add(src_id)
+            #     if 0 < src_id <= 99999:
+            #         available_src_ids.remove(src_id)
+            #
+            # hotfixed_sources = []
+            # # now find and reset bad source_id values
+            # for src in sources:
+            #     src_id, model = src
+            #     src_id = int(src_id)
+            #     # Replace ids that aren't positive 5-digit integers
+            #     if src_id < 0 or src_id > 99999:
+            #         src_id_new = available_src_ids.pop()
+            #         self.log.info(f"Source ID {src_id} falls outside allowed range.")
+            #         self.log.info(f"Reassigning {src_id} to {str(src_id_new).zfill(5)}.")
+            #         # Replace source_id for each model in the SourceModelContainers
+            #         for contained_model in model:
+            #             contained_model.source_id = src_id_new
+            #         src_id = src_id_new
+            #     hotfixed_sources.append((str(src_id), model))
+            #
+            # sources = hotfixed_sources
+            sources = exposure_to_source(source_models)
 
         # Process each source
         for source in sources:
